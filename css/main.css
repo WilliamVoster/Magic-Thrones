@@ -1,5 +1,57 @@
 body {
   background: #CFC9CF;
   color: #3f473f;
+  margin: 0;
+  padding: 0;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  overflow-y: hidden;
+  overflow-x: hidden;
+}
+
+body #canvasGfx {
+  background: red;
+  position: relative;
+}
+
+body #HUD {
+  position: absolute;
+  background: #2349;
+  color: #fdd;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+
+body #HUD #menuTitle {
+  padding: 1em;
+}
+
+body #HUD #menu {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  list-style-type: none;
+  padding: 1em;
+  margin: 0;
 }
 /*# sourceMappingURL=main.css.map */

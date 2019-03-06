@@ -1,4 +1,56 @@
+$BG1: #CFC9CF;
+$BG2: #2349;
+$Col1: #3f473f;
+$Col2: #fdd;
+
 body{
-    background: #CFC9CF;
-    color: #3f473f;
+    background: $BG1;//* ska vær = bakgrunnsfargen på BG bildet eller svart
+    color: $Col1;
+
+
+    margin: 0;
+    padding: 0;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    overflow-y: hidden;
+    overflow-x: hidden;
+
+    #canvasGfx{
+        //border: 2px solid black;
+        //border-radius: 40px;
+
+        background: red;
+
+        position: relative;
+           
+    }
+
+    #HUD{
+        //visibility: hidden; skjer i JS
+
+        position: absolute;
+        background: $BG2;
+        color: $Col2;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        #menuTitle{
+            padding: 1em;
+        }
+
+        #menu{
+            display: flex;
+            flex-direction: column;
+            list-style-type: none;
+
+            padding: 1em;
+            margin: 0;
+            
+        }
+    }
 }
