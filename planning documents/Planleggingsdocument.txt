@@ -1,0 +1,26 @@
+||Planleggingsdokument||
+
+
+***Spillets gang: 
+Spillet begynner med forsiden til spillet, hvor man får informasjon om 
+spillets kontroller, og mulighet til å begynne spillet. Spillet skal 
+være et 2d plattformspill inspirert av mario, hvor man spiller som en 
+av karakterene i gruppen. Karakteren blir kontrollert med piltastene 
+eller wasd, og har en pistol i hånden som han kan skyte med mellomromstasten. 
+Møter små monstre underveis og en boss til slutt. Spillet inneholder 
+forskjellige “plattformer” som spilleren kan hoppe på.
+Mulighet for å bevege seg vertikalt til en ny “skjerm”. 
+Når spilleren har vunnet får du vite litt om historien til 
+spillet (“backstory”). Lignende slik som skjer i Pokémon etter 
+du slår spillet. 
+
+
+***Forbedringer:
+- Highscores - styrt av “coins” man plukker opp, hvor mange liv 
+  man har mistet, hvor fort man fullfører spillet, Kills, Fullførte levler
+- Oppgraderinger (f.eks til våpenet)
+- Finne coins på spillet
+- Flere levler. Leveldesign lignende tetris-figurer (rundt 4 “skjermer” hver)
+- Flere og mer detaljerte animasjoner, som eks en animasjon når man 
+  mister et liv
+
