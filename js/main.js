@@ -7,6 +7,16 @@ const HUD = document.getElementById("HUD");
 const canvW = 1600;
 const canvH = 900;
 
+//Player objekt
+var Player = {
+    x,
+    y,
+    health: 3,
+    score: 0,
+    level: 0
+};
+
+
 //* Canvas & HUD setup 
 {
     let windowW = window.innerWidth;//outerWidth;
