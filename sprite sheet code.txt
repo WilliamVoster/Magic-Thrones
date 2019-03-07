@@ -1,0 +1,62 @@
+.sprite {
+    background-image: url(spritesheet.png);
+    background-repeat: no-repeat;
+    display: block;
+}
+
+.sprite-character_jumping {
+    width: 75px;
+    height: 108px;
+    background-position: 0 0;
+}
+
+.sprite-character_jumping_r {
+    width: 75px;
+    height: 108px;
+    background-position: -75px 0;
+}
+
+.sprite-character_still {
+    width: 35px;
+    height: 170px;
+    background-position: -150px 0;
+}
+
+.sprite-character_still_r {
+    width: 35px;
+    height: 170px;
+    background-position: -185px 0;
+}
+
+.sprite-character_walking_1 {
+    width: 66px;
+    height: 170px;
+    background-position: -220px 0;
+}
+
+.sprite-character_walking_1r {
+    width: 66px;
+    height: 170px;
+    background-position: -286px 0;
+}
+
+.sprite-character_walking_2 {
+    width: 73px;
+    height: 170px;
+    background-position: -352px 0;
+}
+
+.sprite-character_walking_2r {
+    width: 73px;
+    height: 170px;
+    background-position: -425px 0;
+}
+
+<i class="sprite sprite-character_jumping"></i>
+<i class="sprite sprite-character_jumping_r"></i>
+<i class="sprite sprite-character_still"></i>
+<i class="sprite sprite-character_still_r"></i>
+<i class="sprite sprite-character_walking_1"></i>
+<i class="sprite sprite-character_walking_1r"></i>
+<i class="sprite sprite-character_walking_2"></i>
+<i class="sprite sprite-character_walking_2r"></i>
