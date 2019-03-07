@@ -9,8 +9,8 @@ const canvH = 900;
 
 //Player objekt
 var Player = {
-    x,
-    y,
+    x: 10,
+    y: 800,
     health: 3,
     score: 0,
     level: 0
@@ -61,4 +61,4 @@ const showHUD = (title, opt1, opt2, opt3, opt4, opt5, opt6) => {
     HUD.style.visibility = "visible";
 }
 
-//showHUD("testss", "Start game", "tutorial & controlls", "Exit");
+showHUD("testss", "Start game", "Tutorial & Controlls", "Exit");
