@@ -62,3 +62,21 @@ const showHUD = (title, opt1, opt2, opt3, opt4, opt5, opt6) => {
 }
 
 showHUD("testss", "Start game", "Tutorial & Controlls", "Exit");
+
+//* level calss ??
+class Level {
+    constructor(numScreens){
+
+    }
+    
+}
+
+
+function doesIntersect (a,b) {
+    if () {
+        return true
+    }
+    else {
+        return false
+    }
+}
