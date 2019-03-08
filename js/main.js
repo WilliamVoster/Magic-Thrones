@@ -63,6 +63,16 @@ const showHUD = (title, opt1, opt2, opt3, opt4, opt5, opt6) => {
 
 //showHUD("testss", "Start game", "Tutorial & Controlls", "Exit");
 
+/*
+const intersection =  (a, b) => {
+    if () {
+        return true
+    }
+    else {
+        return false
+    }
+}
+*/
 
 class Screen {
     constructor(posArr){
@@ -80,7 +90,7 @@ class Level {
     //^^ Ex: [[1, 1], [1, 2], [2, 2], [2, 3]]
     constructor(screenPosArr){
         this.screens = new Array(4);
-        
+
         for(let i = 0; i < this.screens.length; i++){
             this.screens[i] = new Screen(screenPosArr[i]);
         }
@@ -93,17 +103,26 @@ class Level {
 
 }
 
-let dummyLevelPosArr = [[1, 1], [1, 2], [2, 2], [2, 3]];
-let dummyLevel = new Level(dummyLevelPosArr);
-console.log(dummyLevel);
 
-/*
-function intersection (a,b) {
-    if () {
-        return true
-    }
-    else {
-        return false
-    }
+
+const init = () => {
+    let dummyLevelPosArr = [[1, 1], [1, 2], [2, 2], [2, 3]];
+    let dummyLevel = new Level(dummyLevelPosArr);
+    console.log(dummyLevel);
 }
-*/
+
+//! GameLoop 
+const animate = () => {
+
+    //* Check intersection
+
+    dummyLevel.draw();
+
+    //| Gameloop func, rekursiv
+    requestAnimationFrame(animate);
+}
+
+window.onload = () => {
+    init();
+    animate();
+}
