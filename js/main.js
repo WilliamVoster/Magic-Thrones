@@ -61,18 +61,44 @@ const showHUD = (title, opt1, opt2, opt3, opt4, opt5, opt6) => {
     HUD.style.visibility = "visible";
 }
 
-showHUD("testss", "Start game", "Tutorial & Controlls", "Exit");
+//showHUD("testss", "Start game", "Tutorial & Controlls", "Exit");
 
-//* level calss ??
-class Level {
-    constructor(numScreens){
 
+class Screen {
+    constructor(posArr){
+        this.position = {
+            row: posArr[0],
+            col: posArr[1]
+        }
     }
-    
 }
 
+class Level {
 
-function doesIntersect (a,b) {
+    //numScreens == alltid lik 4
+    //postitions in array format. Ex: [1, 2] (row = 1 & col = 2)
+    //^^ Ex: [[1, 1], [1, 2], [2, 2], [2, 3]]
+    constructor(screenPosArr){
+        this.screens = new Array(4);
+        
+        for(let i = 0; i < this.screens.length; i++){
+            this.screens[i] = new Screen(screenPosArr[i]);
+        }
+    
+    }
+
+    draw(){
+
+    }
+
+}
+
+let dummyLevelPosArr = [[1, 1], [1, 2], [2, 2], [2, 3]];
+let dummyLevel = new Level(dummyLevelPosArr);
+console.log(dummyLevel);
+
+/*
+function intersection (a,b) {
     if () {
         return true
     }
@@ -80,3 +106,4 @@ function doesIntersect (a,b) {
         return false
     }
 }
+*/
