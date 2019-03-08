@@ -95,16 +95,20 @@ let toggleIntervalU = false;
 let toggleIntervalD = false;
 
 const intervalRight = () => {
-    console.log("Right")
+    // console.log("Right");
+    mainCharacter.update([1, 0]); // ++ in x-direction
 }
 const intervalLeft = () => {
-    console.log("Left")
+    // console.log("Left");
+    mainCharacter.update([-1, 0]); // -- in x-direction
 }
 const intervalUp = () => {
-    console.log("Up")
+    // console.log("Up");
+    mainCharacter.update([0, -1]); // -- in y-direction
 }
 const intervalDown = () => {
-    console.log("Down")
+    // console.log("Down");
+    mainCharacter.update([0, 1]); // ++ in y-direction
 }
 
 const keyEventDownHandler = e => {
@@ -239,12 +243,14 @@ class Enemy extends Entity{
 
 class Player extends Entity{
     constructor(x, y, w, h, spriteSheetObject){
-        super(x, y, w, h, spriteSheetObject);
+        super(x, y, w, h);
+        this.spriteSheetObject = spriteSheetObject;
 
         this.health = 3;
         this.score = 0;
         this.level = 0;
-        this.speed = 10; //interval - hvert 10-ende millisek
+        this.updateSpeed = 10; //interval - hvert 10-ende millisek
+        this.speed = 2;
         
         // //Player objekt  LOG sitt player-object
         // var Player = {
@@ -256,8 +262,9 @@ class Player extends Entity{
         // };
     }
 
-    update(){ //moving player - from keylistner
-        
+    update(direction){ //moving player - from keylistner
+        this.x += direction[0] * mainCharacter.speed;
+        this.y += direction[1] * mainCharacter.speed;
     }
 
     draw(){
@@ -276,8 +283,6 @@ const init = () => {
     window.mainCharacter = new Player(100, 900-300, 150, 200, spriteSheetObject);
     console.log(mainCharacter);
 
-    //| drawscreen/level here?
-    dummyLevel.draw(0/* screenID aka. hvor characteren e (+ vinduene foran/rundt) */);
 }
 
 //! GameLoop 
@@ -285,20 +290,23 @@ const animate = () => {
     countFrames++;
     pCountFrames.innerHTML = countFrames;
 
+    //| clearScreen
+    ctx.clearRect(0, 0, 2000, 1000);
 
-    //* Check intersection
+    //* Check intersection in update func
 
+    //| drawscreen/level here?
+    dummyLevel.draw(0/* screenID aka. hvor characteren e (+ vinduene foran/rundt) */);
 
     //| draw mainChar
     mainCharacter.draw();
 
     //| Gameloop func, recursiv
-    //requestAnimationFrame(animate);
+    requestAnimationFrame(animate);
 }
 
 window.onload = () => {
     init();
     animate();
-    const animation = setInterval(animate, 1000); //fps 
-    // animate();
+    //const animation = setInterval(animate, 1000); //fps 
 }
