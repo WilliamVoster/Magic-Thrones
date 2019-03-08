@@ -242,9 +242,9 @@ class Enemy extends Entity{
 }
 
 class Player extends Entity{
-    constructor(x, y, w, h, spriteSheetObject){
+    constructor(x, y, w, h, imgObj){
         super(x, y, w, h);
-        this.spriteSheetObject = spriteSheetObject;
+        this.imgObj = imgObj;
 
         this.health = 3;
         this.score = 0;
@@ -268,21 +268,29 @@ class Player extends Entity{
     }
 
     draw(){
-        super.draw();
+        //super.draw(); for bare svart firkant
+
+        ctx.drawImage(
+            this.imgObj.img,  //må være Image object - isje url / src
+            this.x, 
+            this.y
+        );
     }
 }
 
 
 
 const init = () => {
+    
     let dummyLevelPosArr = [[1, 1], [1, 2], [2, 2], [2, 3]];
     window.dummyLevel = new Level(dummyLevelPosArr); //window.xx fordi må være global
     console.log(dummyLevel);
-
-    let spriteSheetObject = {positons: [/*positions in spritesheet, can be obj*/], url: ""};
-    window.mainCharacter = new Player(100, 900-300, 150, 200, spriteSheetObject);
+    
+    const imgMainChar = new Image();
+    imgMainChar.src = "./media/main_character/character_still.png";
+    const imgMainCharObj = {positons: [/*positions in spritesheet, can be obj*/], img: imgMainChar};
+    window.mainCharacter = new Player(100, 900-300, 150, 200, imgMainCharObj);
     console.log(mainCharacter);
-
 }
 
 //! GameLoop 
