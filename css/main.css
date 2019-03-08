@@ -23,7 +23,7 @@ body {
 
 body #canvasGfx {
   border-radius: 10px;
-  background: red;
+  background: url(../media/background_sunny.jpg);
 }
 
 body #HUD {
