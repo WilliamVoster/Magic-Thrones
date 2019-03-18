@@ -26,10 +26,6 @@ let countFrames = 0;
     HUD.style.visibility = "hidden";
 }
 
-//! Program
-//ctx.fillRect(10, 20, 100, 100);
-
-
 //? Functions
 const randIntMinMax = (min, max) => Math.floor(Math.random() * (max - min) + min);
 
@@ -54,40 +50,10 @@ const showHUD = (title, opt1, opt2, opt3, opt4, opt5, opt6) => {
     list.forEach(opt => menu.appendChild(opt));
     HUD.style.visibility = "visible";
 }
-
+//Eks:
 //showHUD("testss", "Start game", "Tutorial & Controlls", "Exit");
 
-/*
-const intersection =  (a, b) => {
-    if () {
-        return true
-    }
-    else {
-        return false
-    }
-}
-
-const intersection = (a, b) => condition ? exprTrue : exprFalse;
-// ^^ returnerer true eller false etter condition
-
-function example(…) {
-    return condition1 ? value1
-         : condition2 ? value2
-         : condition3 ? value3
-         : value4;
-}
-
-// Equivalent to:
-function example(…) {
-    if (condition1) { return value1; }
-    else if (condition2) { return value2; }
-    else if (condition3) { return value3; }
-    else { return value4; }
-}
-
-*/
-
-//? keyListener
+//! keyListener
 {
 let toggleIntervalR = false;
 let toggleIntervalL = false;
@@ -108,7 +74,9 @@ const intervalUp = () => {
 }
 const intervalDown = () => {
     // console.log("Down");
-    mainCharacter.update([0, 1]); // ++ in y-direction
+    if (!(window.mainCharacter.y+window.mainCharacter.h>canvH)) {
+        mainCharacter.update([0, 1]); // ++ in y-direction
+    }
 }
 
 const keyEventDownHandler = e => {
@@ -249,19 +217,14 @@ class Player extends Entity{
         this.health = 3;
         this.score = 0;
         this.level = 0;
+        this.screenID = 0;
         this.updateSpeed = 10; //interval - hvert 10-ende millisek
         this.speed = 2;
+        this.direction = true; //True = Høyre, False = Venstre
         
-        // //Player objekt  LOG sitt player-object
-        // var Player = {
-        //     x: 0,
-        //     y: 0,
-        //     health: 3,
-        //     score: 0,
-        //     level: 0
-        // };
     }
-
+    
+        
     update(direction){ //moving player - from keylistner
         this.x += direction[0] * mainCharacter.speed;
         this.y += direction[1] * mainCharacter.speed;
@@ -273,13 +236,22 @@ class Player extends Entity{
         ctx.drawImage(
             this.imgObj.img,  //må være Image object - isje url / src
             this.x, 
-            this.y
+            this.y,
+            this.w,
+            this.h
         );
     }
 }
 
-
-
+function doesIntersect (a, b) {
+    if (a.x+a.width>b.x && a.x<b.x+b.width && a.y+a.height>b.y && a.y<b.y+b.height) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+    
 const init = () => {
     
     let dummyLevelPosArr = [[1, 1], [1, 2], [2, 2], [2, 3]];
@@ -289,9 +261,10 @@ const init = () => {
     const imgMainChar = new Image();
     imgMainChar.src = "./media/main_character/character_still.png";
     const imgMainCharObj = {positons: [/*positions in spritesheet, can be obj*/], img: imgMainChar};
-    window.mainCharacter = new Player(100, 900-300, 150, 200, imgMainCharObj);
+    window.mainCharacter = new Player(100, 900-300, 50, 200, imgMainCharObj);
     console.log(mainCharacter);
 }
+
 
 //! GameLoop 
 const animate = () => {
@@ -318,3 +291,4 @@ window.onload = () => {
     animate();
     //const animation = setInterval(animate, 1000); //fps 
 }
+
