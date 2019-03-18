@@ -229,6 +229,7 @@ class Player extends Entity{
     constructor(x, y, w, h, imgObj){
         super(x, y, w, h);
         this.imgObj = imgObj;
+        //this.w = this.imgObj.img.offsetWidth;
 
         this.health = 3;
         this.score = 0;
@@ -277,7 +278,7 @@ const init = () => {
     const imgMainChar = new Image();
     imgMainChar.src = "./media/main_character/character_still.png";
     const imgMainCharObj = {positons: [/*positions in spritesheet, can be obj*/], img: imgMainChar};
-    window.mainCharacter = new Player(100, 900-300, 50, 200, imgMainCharObj);
+    window.mainCharacter = new Player(100, 900-300, 35, 170, imgMainCharObj); //35 x 170  =  dimentions of standing pic
     console.log(mainCharacter);
 }
 
