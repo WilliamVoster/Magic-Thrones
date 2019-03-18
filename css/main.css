@@ -22,13 +22,15 @@ body {
 }
 
 body #canvasGfx {
+  position: absolute;
+  border: 2px solid black;
   border-radius: 10px;
   background: url(../media/background_sunny.jpg);
 }
 
 body #HUD {
   position: absolute;
-  background: #2349;
+  background: #2344;
   color: #fdd;
   border-radius: 10px;
   display: -webkit-box;
@@ -58,5 +60,9 @@ body #HUD #menu {
   list-style-type: none;
   padding: 1em;
   margin: 0;
+}
+
+body p#countFrames {
+  visibility: hidden;
 }
 /*# sourceMappingURL=main.css.map */
