@@ -31,27 +31,33 @@ const randIntMinMax = (min, max) => Math.floor(Math.random() * (max - min) + min
 
 const showHUD = (title, opt1, opt2, opt3, opt4, opt5, opt6) => {
 
-    const menuTitle = document.getElementById("menuTitle");
-    const menu = document.getElementById("menu");
+    if(title == undefined){
+        HUD.style.visibility = "hidden";
 
-    let list = [];
-    let options = [opt1, opt2, opt3, opt4, opt5, opt6];
-
-    for(i in options){
-        if(options[i] != undefined){
-            console.log(options[i]);
-            let node = document.createElement("li");
-            node.innerHTML = String(options[i]);
-            list.push(node);
+    }else if(title != undefined){
+        const menuTitle = document.getElementById("menuTitle");
+        const menu = document.getElementById("menu");
+        menu.innerHTML = ""; //clear list b4 filling
+    
+        let list = [];
+        let options = [opt1, opt2, opt3, opt4, opt5, opt6];
+    
+        for(i in options){
+            if(options[i] != undefined){
+                //console.log(options[i]);
+                let node = document.createElement("li");
+                node.innerHTML = String(options[i]);
+                list.push(node);
+            }
         }
+    
+        menuTitle.innerHTML = title;
+        list.forEach(opt => menu.appendChild(opt));
+        HUD.style.visibility = "visible";
     }
-
-    menuTitle.innerHTML = title;
-    list.forEach(opt => menu.appendChild(opt));
-    HUD.style.visibility = "visible";
 }
-//Eks:
-//showHUD("testss", "Start game", "Tutorial & Controlls", "Exit");
+//Eks: showHUD("testss", "Start game", "Tutorial & Controlls", "Exit");
+//^^if empty, aka: showHUD(); ==> visibility hidden && reset hud
 
 //! keyListener
 {
@@ -59,6 +65,7 @@ let toggleIntervalR = false;
 let toggleIntervalL = false;
 let toggleIntervalU = false;
 let toggleIntervalD = false;
+let toggleHUDOverlay = false;
 
 const intervalRight = () => {
     // console.log("Right");
@@ -97,6 +104,15 @@ const keyEventDownHandler = e => {
     } else if((e.keyCode == 83 || e.keyCode == 40) && !toggleIntervalD){
         window.keyIntervalDown = setInterval(intervalDown, mainCharacter.speed);
         toggleIntervalD = !toggleIntervalD;
+    }
+
+    if(e.keyCode == 13){
+
+        //if already HUD ==> hide else draw dummy-HUD
+        toggleHUDOverlay ? showHUD() : showHUD("testss", "Start game", "Tutorial & Controlls", "Exit");
+
+        //switch boolean val
+        toggleHUDOverlay = !toggleHUDOverlay;
     }
 }
 const keyEventUpHandler = e => {
