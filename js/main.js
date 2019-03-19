@@ -8,7 +8,7 @@ const pCountFrames = document.getElementById("countFrames");
 const canvW = 1600;
 const canvH = 900;
 const border = 10; //in pixels
-const gravity = 1;//0.25;
+const gravity = 0.05;//0.25;
 let countFrames = 0;
 let entities = [];
 
@@ -144,14 +144,7 @@ class Entity{
         this.w = w,
         this.h = h,
         this.gravityBoolean = gravityBoolean;
-        if(this.gravityBoolean){this.velY = 0;} //, this.gravitySpeed = 0
-    }
-
-    update(){
-        if(this.gravityBoolean){
-
-            
-        }
+        if(this.gravityBoolean){this.velY = 0, this.velX = 0, this.gravitySpeed = 0;}
     }
 
     draw(drawRectBoolean){
@@ -160,19 +153,21 @@ class Entity{
         if(this.gravityBoolean){
 
             if(this.y + this.h > canvH - border){
-                this.velY = 0;
+                this.velY = 0, this.gravitySpeed = 0;
                 this.y = canvH - border - this.h;
     
             }else if(this.y + this.h < canvH - border){
-                //this.velY = Math.floor(this.velY * 100) / 100; //grov avrunding
-                console.log(this.velY);
+                this.velY = Math.floor(this.velY * 100) / 100; //grov avrunding
+                //console.log(this.velY);
 
-                this.velY += - gravity;
-                //this.gravitySpeed += 0.5 * this.velY;
+                this.velY += -gravity;
+                this.gravitySpeed += this.velY;
             }
 
-            this.y += - this.velY; //negative because this.y++ ==> down on canvas (positive y-axis -> downwards)
-            //this.y += - this.gravitySpeed;
+            //this.y += - this.velY; //negative because this.y++ => down on canvas (positive y-axis => downwards)
+            this.y += - this.gravitySpeed;
+            this.x += this.velX; //positive because positive x-axis => to the right on canvas
+            this.velX = 0;
         }
 
         if(drawRectBoolean == undefined || drawRectBoolean){
@@ -272,22 +267,24 @@ class Player extends Entity{
         this.level = 0;
         this.screenID = 0;
         this.updateSpeed = 2; //interval - hvert 2-ende millisek
-        this.speed = 2;
-        this.direction = true; //True = Høyre, False = Venstre
+        this.speed = 7;
+        this.jumpHeight = 10; //10 => Y-speed = 10 pixels/frame
     }
     
     update(direction){ //moving player - direction from keylistner
-        super.update();
         
-         // if not pressing "down" while at bottom of screen &&and&& while not pressing up mid-air
+        // if not pressing "down" while at bottom of screen &&and&& not pressing up while mid-air
         if (
             !(-direction[1] < 0 && this.y + this.h >= canvH - border) && 
             !(-direction[1] > 0 && this.velY < 0)
             ){
 
-            this.velY += 0.5 * -direction[1]; // ( * mainCharacter.speed;
+            this.gravitySpeed = this.jumpHeight * -direction[1]; // ( * mainCharacter.speed;
         }
-        this.x += direction[0] * mainCharacter.speed;
+        if(direction[0] != 0){
+            this.velX = direction[0] * this.speed;
+        }
+        
     }
 
     draw(){
