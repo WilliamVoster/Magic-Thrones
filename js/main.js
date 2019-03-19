@@ -7,7 +7,7 @@ const pCountFrames = document.getElementById("countFrames");
 //| Globals
 const canvW = 1600;
 const canvH = 900;
-const gravity = 1;
+const gravity = 0.2;
 let countFrames = 0;
 
 //* Canvas & HUD setup 
@@ -238,6 +238,7 @@ class Player extends Entity{
         this.updateSpeed = 10; //interval - hvert 10-ende millisek
         this.speed = 2;
         this.direction = true; //True = Høyre, False = Venstre
+        this.gravitySpeed = 0;
         
     }
     
@@ -249,6 +250,17 @@ class Player extends Entity{
 
     draw(){
         //super.draw(); for bare svart firkant
+
+        //| Check intersecting with floor        
+        if(this.y + this.h >= canvH){
+            this.gravitySpeed = 0;
+            
+        }else if(this.y + this.h < canvH){
+            console.log(this.gravitySpeed);
+            this.gravitySpeed += gravity;
+            this.gravitySpeed = Math.floor(this.gravitySpeed * 100) / 100; //grov avrunding
+            this.y += this.gravitySpeed;
+        }
 
         ctx.drawImage(
             this.imgObj.img,  //må være Image object - isje url / src
@@ -278,7 +290,7 @@ const init = () => {
     const imgMainChar = new Image();
     imgMainChar.src = "./media/main_character/character_still.png";
     const imgMainCharObj = {positons: [/*positions in spritesheet, can be obj*/], img: imgMainChar};
-    window.mainCharacter = new Player(100, 900-300, 35, 170, imgMainCharObj); //35 x 170  =  dimentions of standing pic
+    window.mainCharacter = new Player(100, 900-600, 35, 170, imgMainCharObj); //35 x 170  =  dimentions of standing pic
     console.log(mainCharacter);
 }
 
