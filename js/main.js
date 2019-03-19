@@ -30,6 +30,8 @@ let countFrames = 0;
 const randIntMinMax = (min, max) => Math.floor(Math.random() * (max - min) + min);
 
 const showHUD = (title, opt1, opt2, opt3, opt4, opt5, opt6) => {
+    //Eks: showHUD("testss", "Start game", "Tutorial & Controlls", "Exit");
+    //^^if empty, aka: showHUD(); ==> visibility hidden && reset hud
 
     if(title == undefined){
         HUD.style.visibility = "hidden";
@@ -56,8 +58,6 @@ const showHUD = (title, opt1, opt2, opt3, opt4, opt5, opt6) => {
         HUD.style.visibility = "visible";
     }
 }
-//Eks: showHUD("testss", "Start game", "Tutorial & Controlls", "Exit");
-//^^if empty, aka: showHUD(); ==> visibility hidden && reset hud
 
 //! keyListener
 {
@@ -303,21 +303,18 @@ const animate = () => {
     //| clearScreen
     ctx.clearRect(0, 0, 2000, 1000);
 
-    //* Check intersection in update func
-
-    //| drawscreen/level here?
+    //| drawscreen/level
     dummyLevel.draw(0/* screenID aka. hvor characteren e (+ vinduene foran/rundt) */);
 
     //| draw mainChar
     mainCharacter.draw();
 
-    //| Gameloop func, recursiv
+    
     requestAnimationFrame(animate);
 }
 
 window.onload = () => {
     init();
     animate();
-    //const animation = setInterval(animate, 1000); //fps 
 }
 
