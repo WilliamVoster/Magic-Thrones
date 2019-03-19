@@ -7,8 +7,10 @@ const pCountFrames = document.getElementById("countFrames");
 //| Globals
 const canvW = 1600;
 const canvH = 900;
-const gravity = 0.2;
+const border = 10; //in pixels
+const gravity = 1;//0.25;
 let countFrames = 0;
+let entities = [];
 
 //* Canvas & HUD setup 
 {
@@ -81,28 +83,26 @@ const intervalUp = () => {
 }
 const intervalDown = () => {
     // console.log("Down");
-    if (!(window.mainCharacter.y+window.mainCharacter.h>canvH)) {
-        mainCharacter.update([0, 1]); // ++ in y-direction
-    }
+    mainCharacter.update([0, 1]); // ++ in y-direction
 }
 
 const keyEventDownHandler = e => {
     //console.log(e.keyCode); // R L U D : 68&39 65&37 87&38 83&40
 
     if((e.keyCode == 68 || e.keyCode == 39) && !toggleIntervalR){
-        window.keyIntervalRight = setInterval(intervalRight, mainCharacter.speed);
+        window.keyIntervalRight = setInterval(intervalRight, mainCharacter.updateSpeed);
         toggleIntervalR = !toggleIntervalR;
 
     } else if((e.keyCode == 65 || e.keyCode == 37) && !toggleIntervalL){
-        window.keyIntervalLeft = setInterval(intervalLeft, mainCharacter.speed);
+        window.keyIntervalLeft = setInterval(intervalLeft, mainCharacter.updateSpeed);
         toggleIntervalL = !toggleIntervalL;
     }
     if((e.keyCode == 87 || e.keyCode == 38) && !toggleIntervalU){
-        window.keyIntervalUp = setInterval(intervalUp, mainCharacter.speed);
+        window.keyIntervalUp = setInterval(intervalUp, mainCharacter.updateSpeed);
         toggleIntervalU = !toggleIntervalU;
 
     } else if((e.keyCode == 83 || e.keyCode == 40) && !toggleIntervalD){
-        window.keyIntervalDown = setInterval(intervalDown, mainCharacter.speed);
+        window.keyIntervalDown = setInterval(intervalDown, mainCharacter.updateSpeed);
         toggleIntervalD = !toggleIntervalD;
     }
 
@@ -138,26 +138,58 @@ document.addEventListener("keyup", keyEventUpHandler);
 }
 
 class Entity{
-    constructor(x, y, w, h){
+    constructor(x, y, w, h, gravityBoolean){
         this.x = x,
         this.y = y,
         this.w = w,
-        this.h = h
+        this.h = h,
+        this.gravityBoolean = gravityBoolean;
+        if(this.gravityBoolean){this.velY = 0;} //, this.gravitySpeed = 0
     }
 
-    draw(){
-        ctx.fillRect(
-            this.x,
-            this.y,
-            this.w,
-            this.h
-        )
+    update(){
+        if(this.gravityBoolean){
+
+            
+        }
+    }
+
+    draw(drawRectBoolean){
+
+        //| if gravity is on -> fall every frame
+        if(this.gravityBoolean){
+
+            if(this.y + this.h > canvH - border){
+                this.velY = 0;
+                this.y = canvH - border - this.h;
+    
+            }else if(this.y + this.h < canvH - border){
+                //this.velY = Math.floor(this.velY * 100) / 100; //grov avrunding
+                console.log(this.velY);
+
+                this.velY += - gravity;
+                //this.gravitySpeed += 0.5 * this.velY;
+            }
+
+            this.y += - this.velY; //negative because this.y++ ==> down on canvas (positive y-axis -> downwards)
+            //this.y += - this.gravitySpeed;
+        }
+
+        if(drawRectBoolean == undefined || drawRectBoolean){
+            ctx.fillRect(
+                this.x,
+                this.y,
+                this.w,
+                this.h
+            )
+        }
+        
     }
 }
 
 class Platform extends Entity{
-    constructor(x, y, w, h, texture){
-        super(x, y, w, h, texture)
+    constructor(x, y, w, h, gravityBoolean, texture){
+        super(x, y, w, h, gravityBoolean)
         this.texture = texture
     }
     //sjekk hvis overlapp, lag ny hvis
@@ -220,14 +252,18 @@ class Level{
 }
 
 class Enemy extends Entity{
-    constructor(x, y, w, h){
-        super(x, y, w, h);
+    constructor(x, y, w, h, gravityBoolean){
+        super(x, y, w, h, gravityBoolean);
+    }
+
+    draw(){
+        super.draw();
     }
 }
 
 class Player extends Entity{
-    constructor(x, y, w, h, imgObj){
-        super(x, y, w, h);
+    constructor(x, y, w, h, gravityBoolean, imgObj){
+        super(x, y, w, h, gravityBoolean);
         this.imgObj = imgObj;
         //this.w = this.imgObj.img.offsetWidth;
 
@@ -235,32 +271,29 @@ class Player extends Entity{
         this.score = 0;
         this.level = 0;
         this.screenID = 0;
-        this.updateSpeed = 10; //interval - hvert 10-ende millisek
+        this.updateSpeed = 2; //interval - hvert 2-ende millisek
         this.speed = 2;
         this.direction = true; //True = Høyre, False = Venstre
-        this.gravitySpeed = 0;
-        
     }
     
+    update(direction){ //moving player - direction from keylistner
+        super.update();
         
-    update(direction){ //moving player - from keylistner
+         // if not pressing "down" while at bottom of screen &&and&& while not pressing up mid-air
+        if (
+            !(-direction[1] < 0 && this.y + this.h >= canvH - border) && 
+            !(-direction[1] > 0 && this.velY < 0)
+            ){
+
+            this.velY += 0.5 * -direction[1]; // ( * mainCharacter.speed;
+        }
         this.x += direction[0] * mainCharacter.speed;
-        this.y += direction[1] * mainCharacter.speed;
     }
 
     draw(){
-        //super.draw(); for bare svart firkant
+        super.draw(false); //false pga. ikke tegne (fillrect fra super) svart bakgrunn
 
-        //| Check intersecting with floor        
-        if(this.y + this.h >= canvH){
-            this.gravitySpeed = 0;
-            
-        }else if(this.y + this.h < canvH){
-            console.log(this.gravitySpeed);
-            this.gravitySpeed += gravity;
-            this.gravitySpeed = Math.floor(this.gravitySpeed * 100) / 100; //grov avrunding
-            this.y += this.gravitySpeed;
-        }
+        //| flyttet gravity til Entity-class
 
         ctx.drawImage(
             this.imgObj.img,  //må være Image object - isje url / src
@@ -290,8 +323,11 @@ const init = () => {
     const imgMainChar = new Image();
     imgMainChar.src = "./media/main_character/character_still.png";
     const imgMainCharObj = {positons: [/*positions in spritesheet, can be obj*/], img: imgMainChar};
-    window.mainCharacter = new Player(100, 900-600, 35, 170, imgMainCharObj); //35 x 170  =  dimentions of standing pic
+    window.mainCharacter = new Player(100, 900-600, 35, 170, true, imgMainCharObj); //35 x 170  =  dimentions of standing pic
     console.log(mainCharacter);
+
+    entities.push(new Enemy(1300, 100, 100, 100, true));
+    console.log(entities[0]);
 }
 
 
@@ -309,7 +345,10 @@ const animate = () => {
     //| draw mainChar
     mainCharacter.draw();
 
-    
+    //| draw all (other) entities
+    entities.forEach(entety => entety.draw()); //mugligens flytte mainchar/player til dette array-et
+
+
     requestAnimationFrame(animate);
 }
 
