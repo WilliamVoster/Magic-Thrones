@@ -83,10 +83,24 @@ let toggleShoot = true;
 
 const intervalRight = () => {
     // console.log("Right");
+    mainCharacter.walktime++;
+    if (Math.floor(mainCharacter.walktime/60) % 2 == 0) {
+        mainCharacter.spriteState = "walk1R";
+    }
+    else {
+        mainCharacter.spriteState = "walk2R"; 
+    }
     mainCharacter.update([1, 0]); // ++ in x-direction
 }
 const intervalLeft = () => {
     // console.log("Left");
+    mainCharacter.walktime++;
+    if (Math.floor(mainCharacter.walktime/60) % 2 == 0) {
+        mainCharacter.spriteState = "walk1L";
+    }
+    else {
+        mainCharacter.spriteState = "walk2L"; 
+    }
     mainCharacter.update([-1, 0]); // -- in x-direction
 }
 const intervalUp = () => {
@@ -107,10 +121,12 @@ const keyEventDownHandler = e => {
 
     if((e.keyCode == 68 || e.keyCode == 39) && !toggleIntervalR){   
         mainCharacter.faceDirection = true;
+        mainCharacter.walktime = 0;
         window.keyIntervalRight = setInterval(intervalRight, mainCharacter.updateSpeed);
         toggleIntervalR = !toggleIntervalR;
 
     } else if((e.keyCode == 65 || e.keyCode == 37) && !toggleIntervalL){
+        mainCharacter.walktime = 0;
         mainCharacter.faceDirection = false;
         window.keyIntervalLeft = setInterval(intervalLeft, mainCharacter.updateSpeed);
         toggleIntervalL = !toggleIntervalL;
@@ -149,12 +165,12 @@ const keyEventDownHandler = e => {
 const keyEventUpHandler = e => {
     //console.log(e.keyCode);
     if((e.keyCode == 68 || e.keyCode == 39) && toggleIntervalR){
-        mainCharacter.spriteState = "stillR";
+        mainCharacter.walktime = 0;
         clearInterval(window.keyIntervalRight);
         toggleIntervalR = !toggleIntervalR;
 
     }else if((e.keyCode == 65 || e.keyCode == 37) && toggleIntervalL){
-        mainCharacter.spriteState = "stillL";
+        mainCharacter.walktime = 0;
         clearInterval(window.keyIntervalLeft);
         toggleIntervalL = !toggleIntervalL;
     }
@@ -333,9 +349,22 @@ class Player extends Entity{
 
     draw(){
         super.draw(false); //false pga. ikke tegne (fillrect fra super) svart bakgrunn
+
+        if(this.airBool && this.faceDirection) {
+            this.spriteState = "jumpR";
+        } 
+        else if(this.airBool && !this.faceDirection) {
+            this.spriteState = "jumpL";
+        }
+        else if(!this.airBool && this.faceDirection && this.walktime == 0) {
+            this.spriteState = "stillR";
+        }
+        else if(!this.airBool && !this.faceDirection && this.walktime == 0) {
+            this.spriteState = "stillL";
+        }
         //| flyttet gravity til Entity-class
         for (let i = 0; i<Object.keys(spriteInfo).length; i++) {
-            if (mainCharacter.spriteState == Object.keys(spriteInfo)[i]) {
+            if (this.spriteState == Object.keys(spriteInfo)[i]) {
                 ctx.drawImage(
                     this.imgObj.img,  //må være Image object - isje url / src
                     Object.values(spriteInfo)[i][0],
@@ -344,9 +373,10 @@ class Player extends Entity{
                     Object.values(spriteInfo)[i][3],
                     this.x, 
                     this.y,
-                    this.w,
-                    this.h
+                    Object.values(spriteInfo)[i][2],
+                    Object.values(spriteInfo)[i][3]
                 );
+                this.h = Object.values(spriteInfo)[i][3];
             }
         }
     }
@@ -366,6 +396,13 @@ class Shot extends Entity{
 
     draw(){
         super.draw(true); 
+class Boss extends Enemy {
+    constructor(x, y, w, h){
+        super(x, y, w, h, false);
+    }
+
+    draw() {
+        
     }
 }
 
