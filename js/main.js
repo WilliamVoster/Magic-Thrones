@@ -11,6 +11,7 @@ const border = 10; //in pixels
 const gravity = 0.5;//0.25;
 let countFrames = 0;
 let entities = [];
+let shots = [];
 const spriteInfo = { //sx, sy, swidth, sheight
     stillR: [185,0,35,170],
     stillL: [150,0,35,170],
@@ -78,6 +79,7 @@ let toggleIntervalL = false;
 let toggleIntervalU = false;
 let toggleIntervalD = false;
 let toggleHUDOverlay = false;
+let toggleShoot = true;
 
 const intervalRight = () => {
     // console.log("Right");
@@ -96,6 +98,10 @@ const intervalDown = () => {
     mainCharacter.update([0, 1]); // ++ in y-direction
 }
 
+const intervalShoot = () => {
+    console.log("shooting!", toggleShoot);
+}
+
 const keyEventDownHandler = e => {
     //console.log(e.keyCode); // R L U D : 68&39 65&37 87&38 83&40
 
@@ -110,12 +116,13 @@ const keyEventDownHandler = e => {
         toggleIntervalL = !toggleIntervalL;
     }
     if((e.keyCode == 87 || e.keyCode == 38) && !toggleIntervalU){
-        if (mainCharacter.faceDirection) {
-            mainCharacter.spriteState = "jumpR";
-        }
-        else {
-            mainCharacter.spriteState = "jumpL"; 
-        }
+        // if (mainCharacter.faceDirection) {
+        //     mainCharacter.spriteState = "jumpR";
+        // }
+        // else {
+        //     mainCharacter.spriteState = "jumpL"; 
+        // }
+        mainCharacter.faceDirection? mainCharacter.spriteState = "jumpR" : mainCharacter.spriteState = "jumpL";
         
         window.keyIntervalUp = setInterval(intervalUp, mainCharacter.updateSpeed);
         toggleIntervalU = !toggleIntervalU;
@@ -125,7 +132,7 @@ const keyEventDownHandler = e => {
         toggleIntervalD = !toggleIntervalD;
     }
 
-    if(e.keyCode == 13){
+    if(e.keyCode == 13){ //enter
 
         //if already HUD ==> hide else draw dummy-HUD
         toggleHUDOverlay ? showHUD() : showHUD("testss", "Start game", "Tutorial & Controlls", "Exit");
@@ -133,8 +140,14 @@ const keyEventDownHandler = e => {
         //switch boolean val
         toggleHUDOverlay = !toggleHUDOverlay;
     }
+
+    if(e.keyCode == 32 && toggleShoot){ //space
+        window.intervalShoot = setInterval(intervalShoot, 1000);
+        toggleShoot = !toggleShoot;
+    }
 }
 const keyEventUpHandler = e => {
+    //console.log(e.keyCode);
     if((e.keyCode == 68 || e.keyCode == 39) && toggleIntervalR){
         mainCharacter.spriteState = "stillR";
         clearInterval(window.keyIntervalRight);
@@ -152,6 +165,11 @@ const keyEventUpHandler = e => {
     } else if((e.keyCode == 83 || e.keyCode == 40) && toggleIntervalD){
         clearInterval(window.keyIntervalDown);
         toggleIntervalD = !toggleIntervalD;
+    }
+
+    if(e.keyCode == 32 && !toggleShoot){
+        clearInterval(window.intervalShoot);
+        toggleShoot = true;
     }
 }
 document.addEventListener("keydown", keyEventDownHandler);
@@ -334,6 +352,23 @@ class Player extends Entity{
     }
 }
 
+class Shot extends Entity{
+    constructor(x, y, w, h, dir, speed, col){
+        super(x, y, w, h, false);
+        this.dir = dir; // -1 eller 1
+        this.speed = speed;
+        this.col = col;
+    }
+
+    update(){
+        this.x += this.dir * this.speed;
+    }
+
+    draw(){
+        super.draw(true); 
+    }
+}
+
 function doesIntersect (a, b) {
     if (a.x+a.width>b.x && a.x<b.x+b.width && a.y+a.height>b.y && a.y<b.y+b.height) {
         return true;
@@ -357,6 +392,11 @@ const init = () => {
 
     entities.push(new Enemy(1300, 100, 100, 100, true));
     console.log(entities[0]);
+
+    window.shots = [];
+    for (let i = 0; i < 10; i++) {
+        window.shots.push(new Shot(100, 100, 25, 5, 1, 5));
+    }
 }
 
 
@@ -376,7 +416,11 @@ const animate = () => {
 
     //| draw all (other) entities
     entities.forEach(entety => entety.draw()); //mugligens flytte mainchar/player til dette array-et
-
+    for (let i = 0; i < window.shots.length; i++) {
+        window.shots[i].update();
+        window.shots[i].draw();
+        
+    }
 
     requestAnimationFrame(animate);
 }
