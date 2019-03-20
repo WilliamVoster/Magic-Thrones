@@ -11,6 +11,16 @@ const border = 10; //in pixels
 const gravity = 0.05;//0.25;
 let countFrames = 0;
 let entities = [];
+const spriteInfo = { //sx, sy, swidth, sheight
+    stillR: [185,0,35,170],
+    stillL: [150,0,35,170],
+    jumpR: [75,0,75,108],
+    jumpL: [0,0,75,108],
+    walk1R: [286,0,66,170],
+    walk2R: [425,0,73,170],
+    walk1L: [220,0,66,170],
+    walk2L: [352,0,73,170],
+};
 
 //* Canvas & HUD setup 
 {
@@ -89,15 +99,24 @@ const intervalDown = () => {
 const keyEventDownHandler = e => {
     //console.log(e.keyCode); // R L U D : 68&39 65&37 87&38 83&40
 
-    if((e.keyCode == 68 || e.keyCode == 39) && !toggleIntervalR){
+    if((e.keyCode == 68 || e.keyCode == 39) && !toggleIntervalR){   
+        mainCharacter.faceDirection = true;
         window.keyIntervalRight = setInterval(intervalRight, mainCharacter.updateSpeed);
         toggleIntervalR = !toggleIntervalR;
 
     } else if((e.keyCode == 65 || e.keyCode == 37) && !toggleIntervalL){
+        mainCharacter.faceDirection = false;
         window.keyIntervalLeft = setInterval(intervalLeft, mainCharacter.updateSpeed);
         toggleIntervalL = !toggleIntervalL;
     }
     if((e.keyCode == 87 || e.keyCode == 38) && !toggleIntervalU){
+        if (mainCharacter.faceDirection) {
+            mainCharacter.spriteState = "jumpR";
+        }
+        else {
+            mainCharacter.spriteState = "jumpL"; 
+        }
+        
         window.keyIntervalUp = setInterval(intervalUp, mainCharacter.updateSpeed);
         toggleIntervalU = !toggleIntervalU;
 
@@ -117,10 +136,12 @@ const keyEventDownHandler = e => {
 }
 const keyEventUpHandler = e => {
     if((e.keyCode == 68 || e.keyCode == 39) && toggleIntervalR){
+        mainCharacter.spriteState = "stillR";
         clearInterval(window.keyIntervalRight);
         toggleIntervalR = !toggleIntervalR;
 
     }else if((e.keyCode == 65 || e.keyCode == 37) && toggleIntervalL){
+        mainCharacter.spriteState = "stillL";
         clearInterval(window.keyIntervalLeft);
         toggleIntervalL = !toggleIntervalL;
     }
@@ -269,6 +290,9 @@ class Player extends Entity{
         this.updateSpeed = 2; //interval - hvert 2-ende millisek
         this.speed = 7;
         this.jumpHeight = 10; //10 => Y-speed = 10 pixels/frame
+        this.faceDirection = true; //true for right, false for left
+        this.walktime = 0;
+        this.spriteState = "stillR";
     }
     
     update(direction){ //moving player - direction from keylistner
@@ -289,16 +313,22 @@ class Player extends Entity{
 
     draw(){
         super.draw(false); //false pga. ikke tegne (fillrect fra super) svart bakgrunn
-
         //| flyttet gravity til Entity-class
-
-        ctx.drawImage(
-            this.imgObj.img,  //må være Image object - isje url / src
-            this.x, 
-            this.y,
-            this.w,
-            this.h
-        );
+        for (let i = 0; i<Object.keys(spriteInfo).length; i++) {
+            if (mainCharacter.spriteState == Object.keys(spriteInfo)[i]) {
+                ctx.drawImage(
+                    this.imgObj.img,  //må være Image object - isje url / src
+                    Object.values(spriteInfo)[i][0],
+                    Object.values(spriteInfo)[i][1],
+                    Object.values(spriteInfo)[i][2],
+                    Object.values(spriteInfo)[i][3],
+                    this.x, 
+                    this.y,
+                    this.w,
+                    this.h
+                );
+            }
+        }
     }
 }
 
@@ -318,7 +348,7 @@ const init = () => {
     console.log(dummyLevel);
     
     const imgMainChar = new Image();
-    imgMainChar.src = "./media/main_character/character_still.png";
+    imgMainChar.src = "./media/main_character/spritesheet.png";
     const imgMainCharObj = {positons: [/*positions in spritesheet, can be obj*/], img: imgMainChar};
     window.mainCharacter = new Player(100, 900-600, 35, 170, true, imgMainCharObj); //35 x 170  =  dimentions of standing pic
     console.log(mainCharacter);
