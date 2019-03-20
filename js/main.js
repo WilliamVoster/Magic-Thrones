@@ -8,7 +8,7 @@ const pCountFrames = document.getElementById("countFrames");
 const canvW = 1600;
 const canvH = 900;
 const border = 10; //in pixels
-const gravity = 0.05;//0.25;
+const gravity = 0.5;//0.25;
 let countFrames = 0;
 let entities = [];
 const spriteInfo = { //sx, sy, swidth, sheight
@@ -165,7 +165,7 @@ class Entity{
         this.w = w,
         this.h = h,
         this.gravityBoolean = gravityBoolean;
-        if(this.gravityBoolean){this.velY = 0, this.velX = 0, this.gravitySpeed = 0;}
+        if(this.gravityBoolean){this.velY = 0, this.velX = 0, this.airBool = false;}
     }
 
     draw(drawRectBoolean){
@@ -174,7 +174,7 @@ class Entity{
         if(this.gravityBoolean){
 
             if(this.y + this.h > canvH - border){
-                this.velY = 0, this.gravitySpeed = 0;
+                this.velY = 0, this.airBool = false;
                 this.y = canvH - border - this.h;
     
             }else if(this.y + this.h < canvH - border){
@@ -182,11 +182,11 @@ class Entity{
                 //console.log(this.velY);
 
                 this.velY += -gravity;
-                this.gravitySpeed += this.velY;
+                //this.gravitySpeed += this.velY;
             }
 
             //this.y += - this.velY; //negative because this.y++ => down on canvas (positive y-axis => downwards)
-            this.y += - this.gravitySpeed;
+            this.y += -this.velY//this.gravitySpeed;
             this.x += this.velX; //positive because positive x-axis => to the right on canvas
             this.velX = 0;
         }
@@ -300,10 +300,12 @@ class Player extends Entity{
         // if not pressing "down" while at bottom of screen &&and&& not pressing up while mid-air
         if (
             !(-direction[1] < 0 && this.y + this.h >= canvH - border) && 
-            !(-direction[1] > 0 && this.velY < 0)
+            !this.airBool &&  //!(-direction[1] > 0 && this.velY < 0)
+            direction[1] != 0
             ){
 
-            this.gravitySpeed = this.jumpHeight * -direction[1]; // ( * mainCharacter.speed;
+            this.velY += this.jumpHeight * -direction[1]; // ( * mainCharacter.speed;
+            this.airBool = true;
         }
         if(direction[0] != 0){
             this.velX = direction[0] * this.speed;
