@@ -364,6 +364,16 @@ class Player extends Entity{
     }
 }
 
+class Boss extends Enemy {
+    constructor(x, y, w, h){
+        super(x, y, w, h, false);
+    }
+
+    draw() {
+        
+    }
+}
+
 function doesIntersect (a, b) {
     if (a.x+a.width>b.x && a.x<b.x+b.width && a.y+a.height>b.y && a.y<b.y+b.height) {
         return true;
