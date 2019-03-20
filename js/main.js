@@ -11,7 +11,7 @@ const border = 10; //in pixels
 const gravity = 0.5;//0.25;
 let countFrames = 0;
 let entities = [];
-let shots = [];
+window.shots = [];
 const spriteInfo = { //sx, sy, swidth, sheight
     stillR: [185,0,35,170],
     stillL: [150,0,35,170],
@@ -79,15 +79,15 @@ let toggleIntervalL = false;
 let toggleIntervalU = false;
 let toggleIntervalD = false;
 let toggleHUDOverlay = false;
-let toggleShoot = true;
+let toggleIntervalSpace = false; //aka is there an interval?
+window.intervalShootHasRun = false;
 
 const intervalRight = () => {
     // console.log("Right");
     mainCharacter.walktime++;
     if (Math.floor(mainCharacter.walktime/60) % 2 == 0) {
         mainCharacter.spriteState = "walk1R";
-    }
-    else {
+    } else {
         mainCharacter.spriteState = "walk2R"; 
     }
     mainCharacter.update([1, 0]); // ++ in x-direction
@@ -97,8 +97,7 @@ const intervalLeft = () => {
     mainCharacter.walktime++;
     if (Math.floor(mainCharacter.walktime/60) % 2 == 0) {
         mainCharacter.spriteState = "walk1L";
-    }
-    else {
+    } else { 
         mainCharacter.spriteState = "walk2L"; 
     }
     mainCharacter.update([-1, 0]); // -- in x-direction
@@ -112,34 +111,35 @@ const intervalDown = () => {
     mainCharacter.update([0, 1]); // ++ in y-direction
 }
 
-const intervalShoot = () => {
-    console.log("shooting!", toggleShoot);
+const intervalReload = () => {
+    //console.log("reload");
+    window.intervalShootHasRun = true; //needed for timeoutfunc in eventhandler
+    mainCharacter.reloading = false; //after 1000-ish millisek => ready for new shot (after reloaded)
+    mainCharacter.shoot();
+    //mainCharacter.reloading = true;
+    //console.log("shooting!", "reloading: " + mainCharacter.reloading);
 }
 
 const keyEventDownHandler = e => {
     //console.log(e.keyCode); // R L U D : 68&39 65&37 87&38 83&40
 
-    if((e.keyCode == 68 || e.keyCode == 39) && !toggleIntervalR){   
+    if((e.keyCode == 68 || e.keyCode == 39) && !toggleIntervalR){
         mainCharacter.faceDirection = true;
         mainCharacter.walktime = 0;
         window.keyIntervalRight = setInterval(intervalRight, mainCharacter.updateSpeed);
         toggleIntervalR = !toggleIntervalR;
 
     } else if((e.keyCode == 65 || e.keyCode == 37) && !toggleIntervalL){
-        mainCharacter.walktime = 0;
         mainCharacter.faceDirection = false;
+        mainCharacter.walktime = 0;
         window.keyIntervalLeft = setInterval(intervalLeft, mainCharacter.updateSpeed);
         toggleIntervalL = !toggleIntervalL;
     }
     if((e.keyCode == 87 || e.keyCode == 38) && !toggleIntervalU){
-        // if (mainCharacter.faceDirection) {
-        //     mainCharacter.spriteState = "jumpR";
-        // }
-        // else {
-        //     mainCharacter.spriteState = "jumpL"; 
-        // }
-        mainCharacter.faceDirection? mainCharacter.spriteState = "jumpR" : mainCharacter.spriteState = "jumpL";
-        
+
+        //set direction = spriteState
+        mainCharacter.faceDirection ? mainCharacter.spriteState = "jumpR" : mainCharacter.spriteState = "jumpL";
+
         window.keyIntervalUp = setInterval(intervalUp, mainCharacter.updateSpeed);
         toggleIntervalU = !toggleIntervalU;
 
@@ -153,13 +153,27 @@ const keyEventDownHandler = e => {
         //if already HUD ==> hide else draw dummy-HUD
         toggleHUDOverlay ? showHUD() : showHUD("testss", "Start game", "Tutorial & Controlls", "Exit");
 
-        //switch boolean val
+        //switch boolean
         toggleHUDOverlay = !toggleHUDOverlay;
     }
 
-    if(e.keyCode == 32 && toggleShoot){ //space
-        window.intervalShoot = setInterval(intervalShoot, 1000);
-        toggleShoot = !toggleShoot;
+    if(e.keyCode == 32 && !toggleIntervalSpace){ //space
+
+        //start reloadinterval
+        window.actionIntervalReload = setInterval(intervalReload, mainCharacter.reloadTime); 
+        //call player.shoot()
+        mainCharacter.shoot();
+        //set reload state of player
+        mainCharacter.reloading = true;
+        setTimeout( 
+            () => {
+                if(!window.intervalShootHasRun){ //if interval has not run => set reload to false after a time
+                    mainCharacter.reloading = !mainCharacter.reloading
+                }
+            }, mainCharacter.reloadTime
+        );
+        //stop sending more instructions b4 releasing key
+        toggleIntervalSpace = !toggleIntervalSpace;
     }
 }
 const keyEventUpHandler = e => {
@@ -183,9 +197,10 @@ const keyEventUpHandler = e => {
         toggleIntervalD = !toggleIntervalD;
     }
 
-    if(e.keyCode == 32 && !toggleShoot){
-        clearInterval(window.intervalShoot);
-        toggleShoot = true;
+    if(e.keyCode == 32 && toggleIntervalSpace){
+        clearInterval(window.actionIntervalReload);
+        window.intervalShootHasRun = false;
+        toggleIntervalSpace = !toggleIntervalSpace;
     }
 }
 document.addEventListener("keydown", keyEventDownHandler);
@@ -327,6 +342,25 @@ class Player extends Entity{
         this.faceDirection = true; //true for right, false for left
         this.walktime = 0;
         this.spriteState = "stillR";
+        this.reloading = false;
+        this.reloadTime = 500; //1000 ==> every 1000th millisek
+    }
+
+    shoot(){
+        if(!this.reloading){
+            window.shots.push(
+                new Shot(
+                    this.x + this.w / 2 - 25/2,
+                    this.y + this.h / 2 - 10/2,
+                    25,
+                    10,
+                    this.faceDirection ? 1 : -1, //direction - if true return 1 (aka x++ aka right) else left
+                    10,     //projectile speed
+                    "#f0f"  //colour
+                )
+            );
+            //console.log(window.shots);
+        }
     }
     
     update(direction){ //moving player - direction from keylistner
@@ -391,11 +425,19 @@ class Shot extends Entity{
     }
 
     update(){
-        this.x += this.dir * this.speed;
+        if(this.x >= canvW || this.x + this.w <= 0){
+            window.shots.shift(); //deletes the first (and oldest) element in window.shots
+        } else {
+            this.x += this.dir * this.speed;
+            this.draw();
+        }
     }
 
     draw(){
-        super.draw(true); 
+        super.draw(true);
+    }
+}
+
 class Boss extends Enemy {
     constructor(x, y, w, h){
         super(x, y, w, h, false);
@@ -430,10 +472,10 @@ const init = () => {
     entities.push(new Enemy(1300, 100, 100, 100, true));
     console.log(entities[0]);
 
-    window.shots = [];
-    for (let i = 0; i < 10; i++) {
-        window.shots.push(new Shot(100, 100, 25, 5, 1, 5));
-    }
+    
+    // for (let i = 0; i < 1; i++) {
+    //     window.shots.push(new Shot(100, 100, 25, 5, 1, 5));
+    // }
 }
 
 
@@ -455,7 +497,7 @@ const animate = () => {
     entities.forEach(entety => entety.draw()); //mugligens flytte mainchar/player til dette array-et
     for (let i = 0; i < window.shots.length; i++) {
         window.shots[i].update();
-        window.shots[i].draw();
+        //window.shots[i].draw();
         
     }
 
@@ -466,4 +508,3 @@ window.onload = () => {
     init();
     animate();
 }
-
