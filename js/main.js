@@ -365,11 +365,53 @@ class Player extends Entity{
 }
 
 class Boss extends Enemy {
-    constructor(x, y, w, h){
+    constructor(x, y, w, h, imgObj){
         super(x, y, w, h, false);
+        this.imgObj = imgObj;
+        this.lives = 5;
+        this.mad = false;
+        this.dx = 3;
+        this.dy = 3;
+        this.reloadtime = 200;
+        this.reload = this.reloadtime;
+
+    }
+    
+    shoot() {
+        console.log("pew");
     }
 
-    draw() {
+    draw () {
+        this.reload--;
+
+        if(this.reload == 0) {
+            this.shoot();
+            this.reload = this.reloadtime;
+        }
+        if (this.lives<3){
+            //Angry boss state (harder)
+            this.imgObj = imgMadBoss;
+            this.dx = 5;
+            this.dy = 5;
+            this.reloadtime = 150;
+        }
+        if ((this.x+this.dx+this.w) >= canvW - border || (this.x+this.dx) <= border) {
+            this.dx = (-1) * this.dx;
+        }
+        if ((this.y+this.dy+this.h) >= canvH - border || (this.y+this.dy) <= border){
+            this.dy = (-1) * this.dy;
+        }
+
+        ctx.drawImage(
+            this.imgObj,
+            this.x,
+            this.y,
+            this.w,
+            this.h
+            );
+
+        this.x = this.x + this.dx;
+        this.y = this.y + this.dy;
         
     }
 }
@@ -395,6 +437,14 @@ const init = () => {
     window.mainCharacter = new Player(100, 900-600, 35, 170, true, imgMainCharObj); //35 x 170  =  dimentions of standing pic
     console.log(mainCharacter);
 
+    //Making boss
+    const imgBoss = new Image();
+    imgBoss.src = "./media/ufo_happy.png";
+    const imgMadBoss = new Image();
+    imgMadBoss.src = "./media/ufo_mad.png";
+    window.Kristian = new Boss(canvW/2, canvH/2, 150*1.5, 92*1.5, imgBoss);
+
+
     entities.push(new Enemy(1300, 100, 100, 100, true));
     console.log(entities[0]);
 }
@@ -417,6 +467,10 @@ const animate = () => {
     //| draw all (other) entities
     entities.forEach(entety => entety.draw()); //mugligens flytte mainchar/player til dette array-et
 
+    //draw boss
+    if(mainCharacter.level == 0 && Kristian.lives != 0) {
+        Kristian.draw();
+    }
 
     requestAnimationFrame(animate);
 }
