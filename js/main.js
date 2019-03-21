@@ -5,6 +5,8 @@ const HUD = document.getElementById("HUD");
 const pCountFrames = document.getElementById("countFrames");
 
 //| Globals
+let loadedOnce = false;
+
 const canvW = 1600;
 const canvH = 900;
 const border = 10; //in pixels
@@ -526,6 +528,26 @@ function doesIntersect (a, b) {
         return false;
     }
 }
+
+const parseURLParams = url => {
+    var queryStart = url.indexOf("?") + 1,
+        queryEnd   = url.indexOf("#") + 1 || url.length + 1,
+        query = url.slice(queryStart, queryEnd - 1),
+        pairs = query.replace(/\+/g, " ").split("&"),
+        parms = {}, i, n, v, nv;
+
+    if (query === url || query === "") return;
+
+    for (i = 0; i < pairs.length; i++) {
+        nv = pairs[i].split("=", 2);
+        n = decodeURIComponent(nv[0]);
+        v = decodeURIComponent(nv[1]);
+
+        if (!parms.hasOwnProperty(n)) parms[n] = [];
+        parms[n].push(nv.length === 2 ? v : null);
+    }
+    return parms;
+}
     
 const init = () => {
     
@@ -539,21 +561,15 @@ const init = () => {
     window.mainCharacter = new Player(100, 900-600, 35, 170, true, imgMainCharObj); //35 x 170  =  dimentions of standing pic
     console.log(mainCharacter);
 
-    //Making boss
+    //Make boss
     const imgBoss = new Image();
     imgBoss.src = "./media/ufo_happy.png";
     const imgMadBoss = new Image();
     imgMadBoss.src = "./media/ufo_mad.png";
     window.Kristian = new Boss(canvW/2, canvH/2, 150*1.5, 92*1.5, imgBoss);
 
-
     entities.push(new Enemy(1300, 100, 100, 100, true));
     console.log(entities[0]);
-
-    
-    // for (let i = 0; i < 1; i++) {
-    //     window.shots.push(new Shot(100, 100, 25, 5, 1, 5));
-    // }
 }
 
 
@@ -582,13 +598,29 @@ const animate = () => {
     for (let i = 0; i < window.shots.length; i++) {
         window.shots[i].update();
         //window.shots[i].draw();
-        
     }
 
     requestAnimationFrame(animate);
 }
 
 window.onload = () => {
-    init();
-    animate();
+
+    //redirect to map1.html
+    window.url = location.href;
+    window.parsedURL = parseURLParams(window.url);
+
+    if(window.parsedURL != undefined){
+        window.toOjbURL = JSON.parse(window.parsedURL.mapData[0]);
+        window.loadedOnce = window.toOjbURL.loadedOnce;
+    }
+    
+    if(window.loadedOnce != undefined && window.loadedOnce){
+        console.log("levelObject: ", window.toOjbURL);
+        init();
+        animate();
+
+    }else if(!window.loadedOnce || window.loadedOnce == undefined){
+        window.location.replace("./maps/screen1.html");             //! FILE SOURCE
+        console.log("redirecting!");
+    }
 }
