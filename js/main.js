@@ -372,7 +372,7 @@ class Player extends Entity{
         // if not pressing "down" while at bottom of screen &&and&& not pressing up while mid-air
         if (
             !(-direction[1] < 0 && this.y + this.h >= canvH - border) && 
-            !this.airBool &&  //!(-direction[1] > 0 && this.velY < 0)
+            !this.airBool &&  //-!(-direction[1] > 0 && this.velY < 0)
             direction[1] != 0
             ){
 
@@ -433,7 +433,12 @@ class Shot extends Entity{
     update(){
         if(this.x >= canvW || this.x + this.w <= 0){
             for(var x in window.shots){
-                if(window.shots[x].x >= canvW || window.shots[x].x + window.shots[x].w <= 0 || window.shots[x].y >= canvH || window.shots[x].y + window.shots[x].h <= 0){
+                if(
+                    window.shots[x].x >= canvW || 
+                    window.shots[x].x + window.shots[x].w <= 0 || 
+                    window.shots[x].y >= canvH || 
+                    window.shots[x].y + window.shots[x].h <= 0
+                ){
                     window.shots.splice(x, 1); //sjekker alle skuddene om de er inni eller ikke
                 }
             }
