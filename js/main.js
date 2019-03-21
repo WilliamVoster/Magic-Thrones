@@ -264,23 +264,23 @@ class Platform extends Entity{
 }
 
 class Screen{
-    constructor(posArr){
+    constructor(posArr, data){ //posArr: [1, 1] && data: [1, 1, 1, 1, 2, 1, 1, ...]
         this.position = {
             row: posArr[0],
             col: posArr[1]
         }
+        this.data = data;
 
-        this.platforms = new Array(8);
-        for (let i = 0; i < this.platforms.length; i++) {
-            this.platforms[i] = new Platform(
-                randIntMinMax(50, 1600 - 100 - 50), //50 padding, 100 width on platform
-                randIntMinMax(50, 900 - 20 - 50), 
-                100, 
-                20,
-                "textureURL"
-            );
-            
-        }
+        // this.platforms = new Array(8);
+        // for (let i = 0; i < this.platforms.length; i++) {
+        //     this.platforms[i] = new Platform(
+        //         randIntMinMax(50, 1600 - 100 - 50), //50 padding, 100 width on platform
+        //         randIntMinMax(50, 900 - 20 - 50), 
+        //         100, 
+        //         20,
+        //         "textureURL"
+        //     );
+        // }
     }
 
 }
@@ -289,13 +289,17 @@ class Level{
 
     //numScreens == alltid lik 4
     //postitions in array format. Ex: [1, 2] (row = 1 & col = 2)
-    //^^ Ex: [[1, 1], [1, 2], [2, 2], [2, 3]]
-    constructor(screenPosArr){
+    //positions: [[1, 1], [1, 2], [2, 2], [2, 3]]
+    //screenData: [[dataforScreen0], [dataforScreen0], [dataforScreen0], [dataforScreen0]]
+    constructor(positions, screenData){ 
         this.screens = new Array(4);
-
+        //fill arr with screen objects
         for(let i = 0; i < this.screens.length; i++){
-            this.screens[i] = new Screen(screenPosArr[i]);
-        }
+            this.screens[i] = new Screen(
+                positions[i], 
+                screenData[i]
+                )
+            }
     
     }
 
@@ -561,9 +565,20 @@ const parseURLParams = url => {
     
 const init = () => {
     
-    let dummyLevelPosArr = [[1, 1], [1, 2], [2, 2], [2, 3]];
-    window.dummyLevel = new Level(dummyLevelPosArr); //window.xx fordi må være global
-    console.log(dummyLevel);
+    let positions = toOjbURL.layout;//eks: [[1, 1], [1, 2], [2, 2], [2, 3]];
+    let levelData = [
+        toOjbURL.screen1Data, 
+        toOjbURL.screen2Data, 
+        toOjbURL.screen3Data, 
+        toOjbURL.screen4Data
+    ];
+    window.level = new Level(positions, levelData);
+    console.log(window.level);
+    
+    // let dummyLevelPosArr = [[1, 1], [1, 2], [2, 2], [2, 3]];
+    // window.dummyLevel = new Level(dummyLevelPosArr); //window.xx fordi må være global
+    // console.log(dummyLevel);
+
     
     const imgMainChar = new Image();
     imgMainChar.src = "./media/main_character/spritesheet.png";
@@ -592,7 +607,7 @@ const animate = () => {
     ctx.clearRect(0, 0, 2000, 1000);
 
     //| drawscreen/level
-    dummyLevel.draw(0/* screenID aka. hvor characteren e (+ vinduene foran/rundt) */);
+    //dummyLevel.draw(mainCharacter.screenID/* screenID aka. hvor characteren e (+ vinduene foran/rundt) */);
 
     //| draw mainChar
     mainCharacter.draw();
@@ -630,7 +645,7 @@ window.onload = () => {
         animate();
 
     }else if(!window.loadedOnce || window.loadedOnce == undefined){
-        window.location.replace("./maps/screen1.html");             //! FILE SOURCE
+        window.location.replace("./maps/level1/levelData.html");             //! FILE SOURCE
         console.log("redirecting!");
     }
 }
