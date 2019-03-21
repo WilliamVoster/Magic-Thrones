@@ -429,8 +429,14 @@ class Shot extends Entity{
     }
 
     update(){
+
+        
         if(this.x >= canvW || this.x + this.w <= 0){
-            window.shots.shift(); //deletes the first (and oldest) element in window.shots
+            for(var x in window.shots){
+                if(window.shots[x].x >= canvW || window.shots[x].x + window.shots[x].w <= 0 || window.shots[x].y >= canvH || window.shots[x].y + window.shots[x].h <= 0){
+                    window.shots.splice(x, 1); //sjekker alle skuddene om de er inni eller ikke
+                }
+            }
         } else {
             this.x += this.dirx * this.speed;
             this.y += this.diry * this.speed;
@@ -442,6 +448,7 @@ class Shot extends Entity{
         super.draw(true);
     }
 }
+
 
 class Boss extends Enemy {
     constructor(x, y, w, h, imgObj){
