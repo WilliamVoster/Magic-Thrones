@@ -429,8 +429,6 @@ class Shot extends Entity{
     }
 
     update(){
-
-        
         if(this.x >= canvW || this.x + this.w <= 0){
             for(var x in window.shots){
                 if(window.shots[x].x >= canvW || window.shots[x].x + window.shots[x].w <= 0 || window.shots[x].y >= canvH || window.shots[x].y + window.shots[x].h <= 0){
