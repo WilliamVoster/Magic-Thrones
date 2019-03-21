@@ -357,7 +357,7 @@ class Player extends Entity{
                     this.faceDirection ? 1 : -1, //direction - if true return 1 (aka x++ aka right) else left
                     0,
                     10,     //projectile speed
-                    "#f0f",  //colour
+                    "#f90cda",  //colour
                     false
                 )
             );
@@ -443,7 +443,9 @@ class Shot extends Entity{
     }
 
     draw(){
+        ctx.fillStyle = this.col;
         super.draw(true);
+        ctx.fillStyle = "#000";
     }
 }
 
