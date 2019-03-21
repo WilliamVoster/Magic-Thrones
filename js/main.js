@@ -264,12 +264,28 @@ class Platform extends Entity{
 }
 
 class Screen{
-    constructor(posArr, data){ //posArr: [1, 1] && data: [1, 1, 1, 1, 2, 1, 1, ...]
+    constructor(posArr, data, w, h, tileW, tileH){ //posArr: [1, 1] && data: [1, 1, 1, 1, 2, 1, 1, ...]
         this.position = {
             row: posArr[0],
             col: posArr[1]
         }
         this.data = data;
+        this.w = w;
+        this.h = h;
+        this.tileW = tileW;
+        this.tileH = tileH;
+
+        //generating and filling 2d-array
+        let col = new Array(this.h || 14); //outer array
+        for (let i = 0; i < col.length; i++) {
+            let row = new Array(this.w || 25); //one of many inner arrays
+            for (let j = 0; j < row.length; j++) {
+                row[j] = this.data[ i * row.length + j ];
+            }
+            col[i] = row;
+        }
+        //console.log(col);
+        this.data = col; //overwrite data, previously stored twice at this.data2DArray
 
         // this.platforms = new Array(8);
         // for (let i = 0; i < this.platforms.length; i++) {
@@ -283,6 +299,24 @@ class Screen{
         // }
     }
 
+    draw(){
+        for (let i = 0; i < this.data.length; i++) { //outer arr
+
+            for (let j = 0; j < this.data[i].length; j++) { //inner arr
+                
+                ctx.fillStyle = "#f0f";
+                ctx.font = "20px Georgia";
+                ctx.fillText(
+                    this.data[i][j],
+                    this.tileW * 2*j + 10,
+                    this.tileH * 2*i + 30
+                );
+                
+            }
+            
+        }
+    }
+
 }
 
 class Level{
@@ -291,33 +325,43 @@ class Level{
     //postitions in array format. Ex: [1, 2] (row = 1 & col = 2)
     //positions: [[1, 1], [1, 2], [2, 2], [2, 3]]
     //screenData: [[dataforScreen0], [dataforScreen0], [dataforScreen0], [dataforScreen0]]
-    constructor(positions, screenData){ 
+    constructor(positions, screenData, w, h, tileW, tileH){
+        this.w = w;
+        this.h = h;
+        this.tileW = tileW;
+        this.tileH = tileH;
         this.screens = new Array(4);
+
         //fill arr with screen objects
         for(let i = 0; i < this.screens.length; i++){
             this.screens[i] = new Screen(
                 positions[i], 
-                screenData[i]
+                screenData[i],
+                this.w,
+                this.h,
+                this.tileW,
+                this.tileH
                 )
             }
     
     }
 
     update(screenID){
-
     }
-
+    
     draw(screenID){
+        this.screens[screenID].draw(); //draw func at right screenID
 
-        for(let i = 0; i < this.screens[screenID].platforms.length; i++){
-            ctx.fillRect(
-                this.screens[screenID].platforms[i].x,
-                this.screens[screenID].platforms[i].y,
-                this.screens[screenID].platforms[i].w,
-                this.screens[screenID].platforms[i].h
-            );
-            //console.log(this.screens[screenID].platforms[i].x);
-        }
+
+        // for(let i = 0; i < this.screens[screenID].platforms.length; i++){
+        //     ctx.fillRect(
+        //         this.screens[screenID].platforms[i].x,
+        //         this.screens[screenID].platforms[i].y,
+        //         this.screens[screenID].platforms[i].w,
+        //         this.screens[screenID].platforms[i].h
+        //     );
+        //     //console.log(this.screens[screenID].platforms[i].x);
+        // }
     }
 
 }
@@ -565,14 +609,21 @@ const parseURLParams = url => {
     
 const init = () => {
     
-    let positions = toOjbURL.layout;//eks: [[1, 1], [1, 2], [2, 2], [2, 3]];
+    let positions = toObjURL.layout;//eks: [[1, 1], [1, 2], [2, 2], [2, 3]];
     let levelData = [
-        toOjbURL.screen1Data, 
-        toOjbURL.screen2Data, 
-        toOjbURL.screen3Data, 
-        toOjbURL.screen4Data
+        toObjURL.screen1Data, 
+        toObjURL.screen2Data, 
+        toObjURL.screen3Data, 
+        toObjURL.screen4Data
     ];
-    window.level = new Level(positions, levelData);
+    window.level = new Level(
+        positions, 
+        levelData, 
+        toObjURL.width, 
+        toObjURL.height, 
+        toObjURL.tileWidth, 
+        toObjURL.tileHeight
+    );
     console.log(window.level);
     
     // let dummyLevelPosArr = [[1, 1], [1, 2], [2, 2], [2, 3]];
@@ -609,6 +660,9 @@ const animate = () => {
     //| drawscreen/level
     //dummyLevel.draw(mainCharacter.screenID/* screenID aka. hvor characteren e (+ vinduene foran/rundt) */);
 
+    //| levelDraw
+    level.draw(mainCharacter.screenID);
+
     //| draw mainChar
     mainCharacter.draw();
 
@@ -616,9 +670,7 @@ const animate = () => {
     entities.forEach(entety => entety.draw()); //mugligens flytte mainchar/player til dette array-et
 
     //draw boss
-    if(mainCharacter.level == 0 && Kristian.lives != 0) {
-        Kristian.draw();
-    }
+    if(mainCharacter.screenID == 3 && Kristian.lives != 0) {Kristian.draw()}
 
     for (let i = 0; i < window.shots.length; i++) {
         window.shots[i].update();
@@ -635,12 +687,12 @@ window.onload = () => {
     window.parsedURL = parseURLParams(window.url);
 
     if(window.parsedURL != undefined){
-        window.toOjbURL = JSON.parse(window.parsedURL.mapData[0]);
-        window.loadedOnce = window.toOjbURL.loadedOnce;
+        window.toObjURL = JSON.parse(window.parsedURL.mapData[0]);
+        window.loadedOnce = window.toObjURL.loadedOnce;
     }
     
     if(window.loadedOnce != undefined && window.loadedOnce){
-        console.log("levelObject: ", window.toOjbURL);
+        console.log("levelObject: ", window.toObjURL);
         init();
         animate();
 

@@ -1,6 +1,9 @@
 # Magic-Thrones
 Group project made with HTML5 Canvas
 
+**mapRendering
+![](./previews/preview5.PNG)
+
 **bosslevel
 ![](./previews/preview4.PNG)
 
