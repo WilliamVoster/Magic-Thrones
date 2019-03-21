@@ -353,7 +353,7 @@ class Player extends Entity{
             window.shots.push(
                 new Shot(
                     this.x + this.w / 2 - 25/2,
-                    this.y + this.h / 2 - 10/2,
+                    this.y + this.h / 2 - 32,
                     25,
                     10,
                     this.faceDirection ? 1 : -1, //direction - if true return 1 (aka x++ aka right) else left
