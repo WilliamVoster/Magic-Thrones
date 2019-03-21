@@ -467,6 +467,8 @@ class Boss extends Enemy {
         this.dy = 3;
         this.reloadtime = 80;
         this.reload = this.reloadtime;
+        this.shotSpeed = 1;
+        this.shotColour = "#f00";
 
     }
     
@@ -479,8 +481,8 @@ class Boss extends Enemy {
                             this.x + this.w / 2 - 25/2, this.y + this.h / 2 - 10/2,
                             10, 10,
                             i, j, 
-                            5,     //projectile speed
-                            "#ff0000",  //colour
+                            5 * this.shotSpeed,     //projectile speed
+                            this.shotColour,//"#f00",  //colour
                             true
                             )
                         );
@@ -500,9 +502,12 @@ class Boss extends Enemy {
         if (this.lives<3){
             //Angry boss state (harder)
             this.imgObj = imgMadBoss;
-            this.dx = 5;
-            this.dy = 5;
-            this.reloadtime = 150;
+            // this.dx *= 2;
+            // this.dy *= 2;
+            this.reloadtime *= 1/2;
+            this.shotSpeed = 2;
+            this.shotColour = "#a0a";
+            this.lives = 5;
         }
         if ((this.x+this.dx+this.w) >= canvW - border || (this.x+this.dx) <= border) {
             this.dx = (-1) * this.dx;
@@ -567,9 +572,9 @@ const init = () => {
     console.log(mainCharacter);
 
     //Make boss
-    const imgBoss = new Image();
+    window.imgBoss = new Image();
     imgBoss.src = "./media/ufo_happy.png";
-    const imgMadBoss = new Image();
+    window.imgMadBoss = new Image();
     imgMadBoss.src = "./media/ufo_mad.png";
     window.Kristian = new Boss(canvW/2, canvH/2, 150*1.5, 92*1.5, imgBoss);
 
