@@ -355,8 +355,10 @@ class Player extends Entity{
                     25,
                     10,
                     this.faceDirection ? 1 : -1, //direction - if true return 1 (aka x++ aka right) else left
+                    0,
                     10,     //projectile speed
-                    "#f0f"  //colour
+                    "#f0f",  //colour
+                    false
                 )
             );
             //console.log(window.shots);
@@ -417,18 +419,21 @@ class Player extends Entity{
 }
 
 class Shot extends Entity{
-    constructor(x, y, w, h, dir, speed, col){
+    constructor(x, y, w, h, dirx, diry, speed, col, enemy){
         super(x, y, w, h, false);
-        this.dir = dir; // -1 eller 1
+        this.dirx = dirx; // -1 eller 1 eller 0
+        this.diry = diry; // -1 / 1 / 0
         this.speed = speed;
         this.col = col;
+        this.enemy = enemy; //Boolean, true if from enemy
     }
 
     update(){
         if(this.x >= canvW || this.x + this.w <= 0){
             window.shots.shift(); //deletes the first (and oldest) element in window.shots
         } else {
-            this.x += this.dir * this.speed;
+            this.x += this.dirx * this.speed;
+            this.y += this.diry * this.speed;
             this.draw();
         }
     }
@@ -446,13 +451,29 @@ class Boss extends Enemy {
         this.mad = false;
         this.dx = 3;
         this.dy = 3;
-        this.reloadtime = 200;
+        this.reloadtime = 80;
         this.reload = this.reloadtime;
 
     }
     
-    shoot() {
-        console.log("pew");
+    shoot(){
+        for(let i= -1; i <= 1; i++) {
+            for (let j = -1; j <= 1; j++) {
+                if (!(j == 0 && i == 0)) {
+                    window.shots.push(
+                        new Shot(
+                            this.x + this.w / 2 - 25/2, this.y + this.h / 2 - 10/2,
+                            10, 10,
+                            i, j, 
+                            5,     //projectile speed
+                            "#ff0000",  //colour
+                            true
+                            )
+                        );
+                        //console.log(window.shots);
+                }
+            }
+        }
     }
 
     draw () {
@@ -491,7 +512,7 @@ class Boss extends Enemy {
 }
 
 function doesIntersect (a, b) {
-    if (a.x+a.width>b.x && a.x<b.x+b.width && a.y+a.height>b.y && a.y<b.y+b.height) {
+    if (a.x+a.w>=b.x && a.x<=b.x+b.w && a.y+a.h>=b.y && a.y<=b.y+b.h) {
         return true;
     }
     else {
@@ -550,7 +571,6 @@ const animate = () => {
     if(mainCharacter.level == 0 && Kristian.lives != 0) {
         Kristian.draw();
     }
-
 
     for (let i = 0; i < window.shots.length; i++) {
         window.shots[i].update();
