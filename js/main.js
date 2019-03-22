@@ -12,6 +12,7 @@ const canvW = 1600;
 const canvH = 900;
 const border = 10; //in pixels
 const gravity = 0.5;//0.25;
+const entityScale = 0.5; //currently not in use
 let countFrames = 0;
 let entities = [];
 window.shots = [];
@@ -626,15 +627,6 @@ class Boss extends Enemy {
     }
 }
 
-function doesIntersect (a, b) {
-    if (a.x+a.w>=b.x && a.x<=b.x+b.w && a.y+a.h>=b.y && a.y<=b.y+b.h) {
-        return true;
-    }
-    else {
-        return false;
-    }
-}
-
 const parseURLParams = url => {
     var queryStart = url.indexOf("?") + 1,
         queryEnd   = url.indexOf("#") + 1 || url.length + 1,
@@ -683,7 +675,7 @@ const init = () => {
     const imgMainChar = new Image();
     imgMainChar.src = "./media/main_character/spritesheet.png";
     const imgMainCharObj = {positons: [/*positions in spritesheet, can be obj*/], img: imgMainChar};
-    window.mainCharacter = new Player(100, 900-600, 35, 170, true, imgMainCharObj); //35 x 170  =  dimentions of standing pic
+    window.mainCharacter = new Player(100, 900-600, 35*entityScale, 170*entityScale, true, imgMainCharObj); //35 x 170  =  dimentions of standing pic
     console.log(mainCharacter);
 
     //Make boss
