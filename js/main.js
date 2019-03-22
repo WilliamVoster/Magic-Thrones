@@ -6,6 +6,8 @@ const pCountFrames = document.getElementById("countFrames");
 
 
 //| Globals
+let loadedOnce = false;
+
 const canvW = 1600;
 const canvH = 900;
 const border = 10; //in pixels
@@ -280,21 +282,55 @@ class Platform extends Entity{
 }
 
 class Screen{
-    constructor(posArr){
+    constructor(posArr, data, w, h, tileW, tileH){ //posArr: [1, 1] && data: [1, 1, 1, 1, 2, 1, 1, ...]
         this.position = {
             row: posArr[0],
             col: posArr[1]
         }
+        this.data = data;
+        this.w = w;
+        this.h = h;
+        this.tileW = tileW;
+        this.tileH = tileH;
 
-        this.platforms = new Array(8);
-        for (let i = 0; i < this.platforms.length; i++) {
-            this.platforms[i] = new Platform(
-                randIntMinMax(50, 1600 - 100 - 50), //50 padding, 100 width on platform
-                randIntMinMax(50, 900 - 20 - 50), 
-                100, 
-                20,
-                "textureURL"
-            );
+        //generating and filling 2d-array
+        let col = new Array(this.h || 14); //outer array
+        for (let i = 0; i < col.length; i++) {
+            let row = new Array(this.w || 25); //one of many inner arrays
+            for (let j = 0; j < row.length; j++) {
+                row[j] = this.data[ i * row.length + j ];
+            }
+            col[i] = row;
+        }
+        //console.log(col);
+        this.data = col; //overwrite data, previously stored twice at this.data2DArray
+
+        // this.platforms = new Array(8);
+        // for (let i = 0; i < this.platforms.length; i++) {
+        //     this.platforms[i] = new Platform(
+        //         randIntMinMax(50, 1600 - 100 - 50), //50 padding, 100 width on platform
+        //         randIntMinMax(50, 900 - 20 - 50), 
+        //         100, 
+        //         20,
+        //         "textureURL"
+        //     );
+        // }
+    }
+
+    draw(){
+        for (let i = 0; i < this.data.length; i++) { //outer arr
+
+            for (let j = 0; j < this.data[i].length; j++) { //inner arr
+                
+                ctx.fillStyle = "#f0f";
+                ctx.font = "20px Georgia";
+                ctx.fillText(
+                    this.data[i][j],
+                    this.tileW * 2*j + 10,
+                    this.tileH * 2*i + 30
+                );
+                
+            }
             
         }
     }
@@ -334,31 +370,45 @@ class Level{
 
     //numScreens == alltid lik 4
     //postitions in array format. Ex: [1, 2] (row = 1 & col = 2)
-    //^^ Ex: [[1, 1], [1, 2], [2, 2], [2, 3]]
-    constructor(screenPosArr){
+    //positions: [[1, 1], [1, 2], [2, 2], [2, 3]]
+    //screenData: [[dataforScreen0], [dataforScreen0], [dataforScreen0], [dataforScreen0]]
+    constructor(positions, screenData, w, h, tileW, tileH){
+        this.w = w;
+        this.h = h;
+        this.tileW = tileW;
+        this.tileH = tileH;
         this.screens = new Array(4);
 
+        //fill arr with screen objects
         for(let i = 0; i < this.screens.length; i++){
-            this.screens[i] = new Screen(screenPosArr[i]);
-        }
+            this.screens[i] = new Screen(
+                positions[i], 
+                screenData[i],
+                this.w,
+                this.h,
+                this.tileW,
+                this.tileH
+                )
+            }
     
     }
 
     update(screenID){
-
     }
-
+    
     draw(screenID){
+        this.screens[screenID].draw(); //draw func at right screenID
 
-        for(let i = 0; i < this.screens[screenID].platforms.length; i++){
-            ctx.fillRect(
-                this.screens[screenID].platforms[i].x,
-                this.screens[screenID].platforms[i].y,
-                this.screens[screenID].platforms[i].w,
-                this.screens[screenID].platforms[i].h
-            );
-            //console.log(this.screens[screenID].platforms[i].x);
-        }
+
+        // for(let i = 0; i < this.screens[screenID].platforms.length; i++){
+        //     ctx.fillRect(
+        //         this.screens[screenID].platforms[i].x,
+        //         this.screens[screenID].platforms[i].y,
+        //         this.screens[screenID].platforms[i].w,
+        //         this.screens[screenID].platforms[i].h
+        //     );
+        //     //console.log(this.screens[screenID].platforms[i].x);
+        // }
     }
 
 }
@@ -418,7 +468,7 @@ class Player extends Entity{
         // if not pressing "down" while at bottom of screen &&and&& not pressing up while mid-air
         if (
             !(-direction[1] < 0 && this.y + this.h >= canvH - border) && 
-            !this.airBool &&  //!(-direction[1] > 0 && this.velY < 0)
+            !this.airBool &&  //-!(-direction[1] > 0 && this.velY < 0)
             direction[1] != 0
             ){
 
@@ -479,7 +529,12 @@ class Shot extends Entity{
     update(){
         if(this.x >= canvW || this.x + this.w <= 0){
             for(var x in window.shots){
-                if(window.shots[x].x >= canvW || window.shots[x].x + window.shots[x].w <= 0 || window.shots[x].y >= canvH || window.shots[x].y + window.shots[x].h <= 0){
+                if(
+                    window.shots[x].x >= canvW || 
+                    window.shots[x].x + window.shots[x].w <= 0 || 
+                    window.shots[x].y >= canvH || 
+                    window.shots[x].y + window.shots[x].h <= 0
+                ){
                     window.shots.splice(x, 1); //sjekker alle skuddene om de er inni eller ikke
                 }
             }
@@ -508,6 +563,8 @@ class Boss extends Enemy {
         this.dy = 3;
         this.reloadtime = 80;
         this.reload = this.reloadtime;
+        this.shotSpeed = 1;
+        this.shotColour = "#f00";
 
     }
     
@@ -520,8 +577,8 @@ class Boss extends Enemy {
                             this.x + this.w / 2 - 25/2, this.y + this.h / 2 - 10/2,
                             10, 10,
                             i, j, 
-                            5,     //projectile speed
-                            "#ff0000",  //colour
+                            5 * this.shotSpeed,     //projectile speed
+                            this.shotColour,//"#f00",  //colour
                             true
                         )
                     );
@@ -541,9 +598,12 @@ class Boss extends Enemy {
         if (this.lives<3){
             //Angry boss state (harder)
             this.imgObj = imgMadBoss;
-            this.dx = 5;
-            this.dy = 5;
-            this.reloadtime = 150;
+            // this.dx *= 2;
+            // this.dy *= 2;
+            this.reloadtime *= 1/2;
+            this.shotSpeed = 2;
+            this.shotColour = "#a0a";
+            this.lives = 5;
         }
         if ((this.x+this.dx+this.w) >= canvW - border || (this.x+this.dx) <= border) {
             this.dx = (-1) * this.dx;
@@ -566,14 +626,59 @@ class Boss extends Enemy {
     }
 }
 
+function doesIntersect (a, b) {
+    if (a.x+a.w>=b.x && a.x<=b.x+b.w && a.y+a.h>=b.y && a.y<=b.y+b.h) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
 
+const parseURLParams = url => {
+    var queryStart = url.indexOf("?") + 1,
+        queryEnd   = url.indexOf("#") + 1 || url.length + 1,
+        query = url.slice(queryStart, queryEnd - 1),
+        pairs = query.replace(/\+/g, " ").split("&"),
+        parms = {}, i, n, v, nv;
+
+    if (query === url || query === "") return;
+
+    for (i = 0; i < pairs.length; i++) {
+        nv = pairs[i].split("=", 2);
+        n = decodeURIComponent(nv[0]);
+        v = decodeURIComponent(nv[1]);
+
+        if (!parms.hasOwnProperty(n)) parms[n] = [];
+        parms[n].push(nv.length === 2 ? v : null);
+    }
+    return parms;
+}
     
 const init = () => {
     window.reloading = setInterval(reloadInterval,100);
     
-    let dummyLevelPosArr = [[1, 1], [1, 2], [2, 2], [2, 3]];
-    window.dummyLevel = new Level(dummyLevelPosArr); //window.xx fordi må være global
-    console.log(dummyLevel);
+    let positions = toObjURL.layout;//eks: [[1, 1], [1, 2], [2, 2], [2, 3]];
+    let levelData = [
+        toObjURL.screen1Data, 
+        toObjURL.screen2Data, 
+        toObjURL.screen3Data, 
+        toObjURL.screen4Data
+    ];
+    window.level = new Level(
+        positions, 
+        levelData, 
+        toObjURL.width, 
+        toObjURL.height, 
+        toObjURL.tileWidth, 
+        toObjURL.tileHeight
+    );
+    console.log(window.level);
+    
+    // let dummyLevelPosArr = [[1, 1], [1, 2], [2, 2], [2, 3]];
+    // window.dummyLevel = new Level(dummyLevelPosArr); //window.xx fordi må være global
+    // console.log(dummyLevel);
+
     
     const imgMainChar = new Image();
     imgMainChar.src = "./media/main_character/spritesheet.png";
@@ -581,7 +686,7 @@ const init = () => {
     window.mainCharacter = new Player(100, 900-600, 35, 170, true, imgMainCharObj); //35 x 170  =  dimentions of standing pic
     console.log(mainCharacter);
 
-    //Making boss
+    //Make boss
     window.imgBoss = new Image();
     imgBoss.src = "./media/ufo_happy.png";
     window.imgMadBoss = new Image();
@@ -590,13 +695,6 @@ const init = () => {
 
     entities.push(new Enemy(1300, 100, 100, 100, true));
     console.log(entities[0]);
-
-    //Boss gui
-    window.KristianGUI = new gameGUI(0,0,100,100,"Lives: ",Kristian.lives);
-    
-    // for (let i = 0; i < 1; i++) {
-    //     window.shots.push(new Shot(100, 100, 25, 5, 1, 5));
-    // }
 }
 
 
@@ -609,7 +707,10 @@ const animate = () => {
     ctx.clearRect(0, 0, 2000, 1000);
 
     //| drawscreen/level
-    dummyLevel.draw(0/* screenID aka. hvor characteren e (+ vinduene foran/rundt) */);
+    //dummyLevel.draw(mainCharacter.screenID/* screenID aka. hvor characteren e (+ vinduene foran/rundt) */);
+
+    //| levelDraw
+    level.draw(mainCharacter.screenID);
 
     // draw skudd & check for hits
     for (let i = 0; i < window.shots.length; i++) {
@@ -625,21 +726,40 @@ const animate = () => {
     //| draw all (other) entities
     entities.forEach(entety => entety.draw()); //mugligens flytte mainchar/player til dette array-et
 
-    //draw boss
-    if(mainCharacter.level == 0 && Kristian.lives != 0) {
-        Kristian.draw();
-        KristianGUI.draw();
-    }
+    
 
     //draw gameGUI
     
 
     
+    if(mainCharacter.screenID == 3 && Kristian.lives != 0) {Kristian.draw()}
+
+    for (let i = 0; i < window.shots.length; i++) {
+        window.shots[i].update();
+        //window.shots[i].draw();
+    }
 
     requestAnimationFrame(animate);
 }
 
 window.onload = () => {
-    init();
-    animate();
+
+    //redirect to map1.html
+    window.url = location.href;
+    window.parsedURL = parseURLParams(window.url);
+
+    if(window.parsedURL != undefined){
+        window.toObjURL = JSON.parse(window.parsedURL.mapData[0]);
+        window.loadedOnce = window.toObjURL.loadedOnce;
+    }
+    
+    if(window.loadedOnce != undefined && window.loadedOnce){
+        console.log("levelObject: ", window.toObjURL);
+        init();
+        animate();
+
+    }else if(!window.loadedOnce || window.loadedOnce == undefined){
+        window.location.replace("./maps/level1/levelData.html");             //! FILE SOURCE
+        console.log("redirecting!");
+    }
 }
