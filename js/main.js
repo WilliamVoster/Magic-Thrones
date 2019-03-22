@@ -4,6 +4,7 @@ const ctx = canvasGfx.getContext("2d");
 const HUD = document.getElementById("HUD");
 const pCountFrames = document.getElementById("countFrames");
 
+
 //| Globals
 const canvW = 1600;
 const canvH = 900;
@@ -31,6 +32,8 @@ const spriteInfo = { //sx, sy, swidth, sheight
     // let canvW = 1600;//canvH * (16/9);//windowW;   //| width = 16/9 of height
     // let canvH = 900;//windowH;
     
+    ctx.font = "100px Helvetica";
+    
     canvasGfx.width  = canvW;
     canvasGfx.height = canvH;
 
@@ -40,6 +43,15 @@ const spriteInfo = { //sx, sy, swidth, sheight
 }
 
 //? Functions
+const doesIntersect = (a,b) => {
+    if (a.x+a.w>=b.x && a.x<=b.x+b.w && a.y+a.h>=b.y && a.y<=b.y+b.h) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
 const randIntMinMax = (min, max) => Math.floor(Math.random() * (max - min) + min);
 
 const showHUD = (title, opt1, opt2, opt3, opt4, opt5, opt6) => {
@@ -80,7 +92,7 @@ let toggleIntervalU = false;
 let toggleIntervalD = false;
 let toggleHUDOverlay = false;
 let toggleIntervalSpace = false; //aka is there an interval?
-window.intervalShootHasRun = false;
+//window.intervalShootHasRun = false;
 
 const intervalRight = () => {
     // console.log("Right");
@@ -111,13 +123,21 @@ const intervalDown = () => {
     mainCharacter.update([0, 1]); // ++ in y-direction
 }
 
-const intervalReload = () => {
-    //console.log("reload");
-    window.intervalShootHasRun = true; //needed for timeoutfunc in eventhandler
-    mainCharacter.reloading = false; //after 1000-ish millisek => ready for new shot (after reloaded)
-    mainCharacter.shoot();
-    //mainCharacter.reloading = true;
-    //console.log("shooting!", "reloading: " + mainCharacter.reloading);
+window.reloadInterval = () => {
+    if(!mainCharacter.reload && mainCharacter.reloadTimer>0) {
+        mainCharacter.reloadTimer--;
+    }
+    else {
+        mainCharacter.reload = true;
+        mainCharacter.reloadTimer = mainCharacter.reloadTime;   
+    }
+}
+
+const intervalShoot = () => {
+    if (mainCharacter.reload) {
+        mainCharacter.shoot();
+        mainCharacter.reload = false;  
+    }
 }
 
 const keyEventDownHandler = e => {
@@ -158,20 +178,18 @@ const keyEventDownHandler = e => {
     }
 
     if(e.keyCode == 32 && !toggleIntervalSpace){ //space
-
-        //start reloadinterval
-        window.actionIntervalReload = setInterval(intervalReload, mainCharacter.reloadTime); 
-        //call player.shoot()
-        mainCharacter.shoot();
-        //set reload state of player
-        mainCharacter.reloading = true;
-        setTimeout( 
-            () => {
-                if(!window.intervalShootHasRun){ //if interval has not run => set reload to false after a time
-                    mainCharacter.reloading = !mainCharacter.reloading
-                }
-            }, mainCharacter.reloadTime
-        );
+        window.actionIntervalReload = setInterval(intervalShoot, 10); 
+        // //call player.shoot()
+        // mainCharacter.shoot();
+        // //set reload state of player
+        // mainCharacter.reloading = true;
+        // setTimeout( 
+        //     () => {
+        //         if(!window.intervalShootHasRun){ //if interval has not run => set reload to false after a time
+        //             mainCharacter.reloading = !mainCharacter.reloading
+        //         }
+        //     }, mainCharacter.reloadTime
+        // );
         //stop sending more instructions b4 releasing key
         toggleIntervalSpace = !toggleIntervalSpace;
     }
@@ -199,7 +217,7 @@ const keyEventUpHandler = e => {
 
     if(e.keyCode == 32 && toggleIntervalSpace){
         clearInterval(window.actionIntervalReload);
-        window.intervalShootHasRun = false;
+        //  window.intervalShootHasRun = false;
         toggleIntervalSpace = !toggleIntervalSpace;
     }
 }
@@ -283,6 +301,35 @@ class Screen{
 
 }
 
+class gameGUI {
+    constructor(x, y, w, h, text, guiVar){
+        this.x = x,
+        this.y = y,
+        this.w = w,
+        this.h = h,
+        this.text = text,
+        this.guiVar = guiVar
+    }
+
+    draw(){
+        ctx.fillStyle = "white";
+        ctx.fillRect(
+            this.x,
+            this.y,
+            this.w,
+            this.h
+        )
+        ctx.fillStyle = "black";
+        ctx.fillText(
+            this.text,
+            this.x + 10,
+            this.y + 35,
+            this.w,
+            this.h
+        )
+    }
+}
+
 class Level{
 
     //numScreens == alltid lik 4
@@ -342,8 +389,9 @@ class Player extends Entity{
         this.faceDirection = true; //true for right, false for left
         this.walktime = 0;
         this.spriteState = "stillR";
-        this.reloading = false;
-        this.reloadTime = 500; //1000 ==> every 1000th millisek
+        this.reload = true;
+        this.reloadTime = 3; //1000 ==> every 1000th millisek
+        this.reloadTimer = this.reloadTime;
     }
 
     shoot(){
@@ -475,8 +523,8 @@ class Boss extends Enemy {
                             5,     //projectile speed
                             "#ff0000",  //colour
                             true
-                            )
-                        );
+                        )
+                    );
                         //console.log(window.shots);
                 }
             }
@@ -518,16 +566,10 @@ class Boss extends Enemy {
     }
 }
 
-function doesIntersect (a, b) {
-    if (a.x+a.w>=b.x && a.x<=b.x+b.w && a.y+a.h>=b.y && a.y<=b.y+b.h) {
-        return true;
-    }
-    else {
-        return false;
-    }
-}
+
     
 const init = () => {
+    window.reloading = setInterval(reloadInterval,100);
     
     let dummyLevelPosArr = [[1, 1], [1, 2], [2, 2], [2, 3]];
     window.dummyLevel = new Level(dummyLevelPosArr); //window.xx fordi må være global
@@ -540,16 +582,17 @@ const init = () => {
     console.log(mainCharacter);
 
     //Making boss
-    const imgBoss = new Image();
+    window.imgBoss = new Image();
     imgBoss.src = "./media/ufo_happy.png";
-    const imgMadBoss = new Image();
+    window.imgMadBoss = new Image();
     imgMadBoss.src = "./media/ufo_mad.png";
     window.Kristian = new Boss(canvW/2, canvH/2, 150*1.5, 92*1.5, imgBoss);
-
 
     entities.push(new Enemy(1300, 100, 100, 100, true));
     console.log(entities[0]);
 
+    //Boss gui
+    window.KristianGUI = new gameGUI(0,0,100,100,"Lives: ",Kristian.lives);
     
     // for (let i = 0; i < 1; i++) {
     //     window.shots.push(new Shot(100, 100, 25, 5, 1, 5));
@@ -568,6 +611,14 @@ const animate = () => {
     //| drawscreen/level
     dummyLevel.draw(0/* screenID aka. hvor characteren e (+ vinduene foran/rundt) */);
 
+    // draw skudd & check for hits
+    for (let i = 0; i < window.shots.length; i++) {
+        window.shots[i].update();
+        //window.shots[i].draw();
+        /*if (doesIntersect(Kristian,window.shots[i])) {
+            console.log("U DED");
+        }*/
+    }
     //| draw mainChar
     mainCharacter.draw();
 
@@ -577,13 +628,13 @@ const animate = () => {
     //draw boss
     if(mainCharacter.level == 0 && Kristian.lives != 0) {
         Kristian.draw();
+        KristianGUI.draw();
     }
 
-    for (let i = 0; i < window.shots.length; i++) {
-        window.shots[i].update();
-        //window.shots[i].draw();
-        
-    }
+    //draw gameGUI
+    
+
+    
 
     requestAnimationFrame(animate);
 }
