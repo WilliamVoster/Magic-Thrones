@@ -5,8 +5,6 @@ Group project made with HTML5 Canvas
 ![](./previews/preview14.PNG)
 ![](./previews/preview10.PNG)
 ![](./previews/preview11.PNG)
-![](./previews/preview12.PNG)
-![](./previews/preview13.PNG)
 
 **bosslevel
 ![](./previews/preview4.PNG)
