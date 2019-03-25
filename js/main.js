@@ -338,8 +338,8 @@ class Screen{
                 
                 ctx.drawImage(
                     imgSpriteSheet,
-                    this.tileW * (this.data[i][j]-1) % 7, 
-                    this.tileH * Math.floor(this.data[i][j] / 7),
+                    this.tileW * ((this.data[i][j]-1) % 7), 
+                    this.tileH * Math.floor((this.data[i][j]-1) / 7),
                     this.tileW,
                     this.tileH,
                     this.tileW * 2 * j + marginW,
