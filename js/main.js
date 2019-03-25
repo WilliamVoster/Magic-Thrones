@@ -675,7 +675,7 @@ const init = () => {
     const imgMainChar = new Image();
     imgMainChar.src = "./media/main_character/spritesheet.png";
     const imgMainCharObj = {positons: [/*positions in spritesheet, can be obj*/], img: imgMainChar};
-    window.mainCharacter = new Player(100, 900-600, 35*entityScale, 170*entityScale, true, imgMainCharObj); //35 x 170  =  dimentions of standing pic
+    window.mainCharacter = new Player(canvW-50, 900-275, 35*entityScale, 170*entityScale, true, imgMainCharObj); //35 x 170  =  dimentions of standing pic
     console.log(mainCharacter);
 
     //Make boss
