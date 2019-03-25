@@ -2,6 +2,7 @@
 Group project made with HTML5 Canvas
 
 **mapRendering
+![](./previews/preview13.PNG)
 ![](./previews/preview12.PNG)
 ![](./previews/preview5.PNG)
 ![](./previews/preview10.PNG)
