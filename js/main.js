@@ -182,18 +182,6 @@ const keyEventDownHandler = e => {
 
     if(e.keyCode == 32 && !toggleIntervalSpace){ //space
         window.actionIntervalReload = setInterval(intervalShoot, 10); 
-        // //call player.shoot()
-        // mainCharacter.shoot();
-        // //set reload state of player
-        // mainCharacter.reloading = true;
-        // setTimeout( 
-        //     () => {
-        //         if(!window.intervalShootHasRun){ //if interval has not run => set reload to false after a time
-        //             mainCharacter.reloading = !mainCharacter.reloading
-        //         }
-        //     }, mainCharacter.reloadTime
-        // );
-        //stop sending more instructions b4 releasing key
         toggleIntervalSpace = !toggleIntervalSpace;
     }
 }
@@ -305,17 +293,6 @@ class Screen{
         }
         //console.log(col);
         this.data = col; //overwrite data, previously stored twice at this.data2DArray
-
-        // this.platforms = new Array(8);
-        // for (let i = 0; i < this.platforms.length; i++) {
-        //     this.platforms[i] = new Platform(
-        //         randIntMinMax(50, 1600 - 100 - 50), //50 padding, 100 width on platform
-        //         randIntMinMax(50, 900 - 20 - 50), 
-        //         100, 
-        //         20,
-        //         "textureURL"
-        //     );
-        // }
     }
 
     draw(){
@@ -553,6 +530,66 @@ class Shot extends Entity{
     }
 }
 
+class batEnemy extends Enemy {
+    constructor(x, y, w, h, ymin, ymax, imgObj){
+        super(x, y, w, h, false);
+        this.imgObj = imgObj;
+        this.lives = 1;
+        this.dy = 2;
+        this.ymin = ymin;
+        this.ymax = ymax;
+    }
+
+    draw () {
+        if ((this.y+this.dy+this.h) >= this.ymax || (this.y+this.dy) <= this.ymin){
+            this.dy = (-1) * this.dy;
+        }
+
+        ctx.drawImage(
+            this.imgObj,
+            this.x,
+            this.y,
+            this.w,
+            this.h
+            );
+
+        this.y = this.y + this.dy;
+    }
+}
+
+class markusEnemy extends Enemy {
+    constructor(x, y, w, h, xmin, xmax, imgObj){
+        super(x, y, w, h, true);
+        this.imgObj = imgObj;
+        this.lives = 2;
+        this.dx = 2;
+        this.xmin = xmin;
+        this.xmax = xmax;
+
+    }
+
+    draw () {
+        if ((this.x+this.dx+this.w) >= this.xmax || (this.x+this.dx) <= this.xmin){
+            this.dx = (-1) * this.dx;
+        }
+        if ( this.dx>0) {
+            this.imgObj = imgMarkusR;
+        }
+        else {
+            this.imgObj = imgMarkusL;
+        }
+
+        ctx.drawImage(
+            this.imgObj,
+            this.x,
+            this.y,
+            this.w,
+            this.h
+            );
+
+        this.x = this.x + this.dx;
+    }
+}
 
 class Boss extends Enemy {
     constructor(x, y, w, h, imgObj){
@@ -685,8 +722,21 @@ const init = () => {
     imgMadBoss.src = "./media/ufo_mad.png";
     window.Kristian = new Boss(canvW/2, canvH/2, 150*1.5, 92*1.5, imgBoss);
 
+    //Markusenemy 
+    window.imgMarkusL = new Image();
+    imgMarkusL.src = "./media/markus_left.png";
+    window.imgMarkusR = new Image();
+    imgMarkusR.src = "./media/markus_right.png";
+
+    //Batenemy example
+    window.imgBat = new Image();
+    imgBat.src = "./media/bat.PNG";
+
+    entities.push(new batEnemy(450,100,30,17,100,300,imgBat));
+    entities.push(new markusEnemy(300, 350, 87, 90, 300, 500, imgMarkusR));
+
     entities.push(new Enemy(1300, 100, 100, 100, true));
-    console.log(entities[0]);
+    console.log(entities);
 }
 
 
@@ -716,7 +766,7 @@ const animate = () => {
     mainCharacter.draw();
 
     //| draw all (other) entities
-    entities.forEach(entety => entety.draw()); //mugligens flytte mainchar/player til dette array-et
+    entities.forEach(entity => entity.draw()); //mugligens flytte mainchar/player til dette array-et
 
     
 
