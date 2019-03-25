@@ -420,6 +420,7 @@ class Enemy extends Entity{
     }
 
     draw(){
+        ctx.fillStyle = "#000";
         super.draw();
     }
 }
@@ -549,7 +550,6 @@ class Shot extends Entity{
     draw(){
         ctx.fillStyle = this.col;
         super.draw(true);
-        ctx.fillStyle = "#000";
     }
 }
 
