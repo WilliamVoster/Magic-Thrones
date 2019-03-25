@@ -10,6 +10,8 @@ let loadedOnce = false;
 
 const canvW = 1600;
 const canvH = 900;
+const marginW = 16;
+const marginH = 16;
 const border = 10; //in pixels
 const gravity = 0.5;//0.25;
 const entityScale = 0.5; //currently not in use
@@ -243,7 +245,7 @@ class Entity{
         //| if gravity is on -> fall every frame
         if(this.gravityBoolean){
 
-            if(this.y + this.h > canvH - border){
+            if(this.y + this.h > canvH - border){ 
                 this.velY = 0, this.airBool = false;
                 this.y = canvH - border - this.h;
     
@@ -323,12 +325,27 @@ class Screen{
 
             for (let j = 0; j < this.data[i].length; j++) { //inner arr
                 
-                ctx.fillStyle = "#f0f";
-                ctx.font = "20px Georgia";
-                ctx.fillText(
-                    this.data[i][j],
-                    this.tileW * 2*j + 10,
-                    this.tileH * 2*i + 30
+                // ctx.fillStyle = "#f0f";
+                // ctx.font = "20px Georgia";
+                // ctx.fillText(
+                //     this.data[i][j],
+                //     this.tileW * 2*j + 10,
+                //     this.tileH * 2*i + 30
+                // );
+
+                //console.log(this.data[i][j], this.data[i][0]);
+                //console.log(i, j);
+                
+                ctx.drawImage(
+                    imgSpriteSheet,
+                    this.tileW * (this.data[i][j]-1) % 7, 
+                    this.tileH * Math.floor(this.data[i][j] / 7),
+                    this.tileW,
+                    this.tileH,
+                    this.tileW * 2 * j + marginW,
+                    this.tileH * 2 * i + marginH,
+                    this.tileW * 2,
+                    this.tileH * 2
                 );
                 
             }
@@ -650,6 +667,10 @@ const parseURLParams = url => {
 const init = () => {
     window.reloading = setInterval(reloadInterval,100);
     
+    // Init level
+    window.imgSpriteSheet = new Image();
+    window.imgSpriteSheet.src = "./maps/tileset1.png";
+
     let positions = toObjURL.layout;//eks: [[1, 1], [1, 2], [2, 2], [2, 3]];
     let levelData = [
         toObjURL.screen1Data, 
@@ -671,7 +692,7 @@ const init = () => {
     // window.dummyLevel = new Level(dummyLevelPosArr); //window.xx fordi må være global
     // console.log(dummyLevel);
 
-    
+    //Init player + playerImg
     const imgMainChar = new Image();
     imgMainChar.src = "./media/main_character/spritesheet.png";
     const imgMainCharObj = {positons: [/*positions in spritesheet, can be obj*/], img: imgMainChar};
@@ -702,7 +723,8 @@ const animate = () => {
     //dummyLevel.draw(mainCharacter.screenID/* screenID aka. hvor characteren e (+ vinduene foran/rundt) */);
 
     //| levelDraw
-    level.draw(mainCharacter.screenID);
+    //level.draw(mainCharacter.screenID);
+    level.screens[0].draw(); //midlertidig
 
     // draw skudd & check for hits
     for (let i = 0; i < window.shots.length; i++) {
