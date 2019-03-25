@@ -10,8 +10,8 @@ let loadedOnce = false;
 
 const canvW = 1600;
 const canvH = 900;
-const marginW = 16;
-const marginH = 16;
+const marginW = 8; //32/4
+const marginH = 8;
 const border = 10; //in pixels
 const gravity = 0.5;//0.25;
 const entityScale = 0.5; //currently not in use
@@ -319,8 +319,8 @@ class Screen{
                     this.tileH * Math.floor((this.data[i][j]-1) / 7),
                     this.tileW,
                     this.tileH,
-                    this.tileW * 2 * j + marginW,
-                    this.tileH * 2 * i + marginH,
+                    this.tileW * 2 * j,// + (marginW),
+                    this.tileH * 2 * i + (marginH),
                     this.tileW * 2,
                     this.tileH * 2
                 );
