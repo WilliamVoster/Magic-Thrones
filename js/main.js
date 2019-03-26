@@ -688,7 +688,17 @@ const init = () => {
     entities.push(new Enemy(1300, 100, 100, 100, true));
     console.log(entities[0]);
 }
+function test(){
+    for(var x in window.level.screens[window.mainCharacter.levelID].data){
+        if(window.mainCharacter.x + window.mainCharacter.h >= window.level.screens[window.mainCharacter.levelID].data[x].x
+            
+            
+            
+        ){
 
+        }
+    }
+}
 
 //! GameLoop 
 const animate = () => {
@@ -721,7 +731,7 @@ const animate = () => {
     
 
     //draw gameGUI
-    
+    //test();
 
     
     if(mainCharacter.screenID == 3 && Kristian.lives != 0) {Kristian.draw()}
@@ -755,3 +765,4 @@ window.onload = () => {
         console.log("redirecting!");
     }
 }
+
