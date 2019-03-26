@@ -2,7 +2,9 @@
 Group project made with HTML5 Canvas
 
 **mapRendering
-![](./previews/preview5.PNG)
+![](./previews/preview14.PNG)
+![](./previews/preview10.PNG)
+![](./previews/preview11.PNG)
 
 **bosslevel
 ![](./previews/preview4.PNG)

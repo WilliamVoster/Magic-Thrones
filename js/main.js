@@ -10,6 +10,8 @@ let loadedOnce = false;
 
 const canvW = 1600;
 const canvH = 900;
+const marginW = 8; //32/4
+const marginH = 8;
 const border = 10; //in pixels
 const gravity = 0.5;//0.25;
 const entityScale = 0.5; //currently not in use
@@ -182,18 +184,6 @@ const keyEventDownHandler = e => {
 
     if(e.keyCode == 32 && !toggleIntervalSpace){ //space
         window.actionIntervalReload = setInterval(intervalShoot, 10); 
-        // //call player.shoot()
-        // mainCharacter.shoot();
-        // //set reload state of player
-        // mainCharacter.reloading = true;
-        // setTimeout( 
-        //     () => {
-        //         if(!window.intervalShootHasRun){ //if interval has not run => set reload to false after a time
-        //             mainCharacter.reloading = !mainCharacter.reloading
-        //         }
-        //     }, mainCharacter.reloadTime
-        // );
-        //stop sending more instructions b4 releasing key
         toggleIntervalSpace = !toggleIntervalSpace;
     }
 }
@@ -243,7 +233,7 @@ class Entity{
         //| if gravity is on -> fall every frame
         if(this.gravityBoolean){
 
-            if(this.y + this.h > canvH - border){
+            if(this.y + this.h > canvH - border){ 
                 this.velY = 0, this.airBool = false;
                 this.y = canvH - border - this.h;
     
@@ -305,17 +295,6 @@ class Screen{
         }
         //console.log(col);
         this.data = col; //overwrite data, previously stored twice at this.data2DArray
-
-        // this.platforms = new Array(8);
-        // for (let i = 0; i < this.platforms.length; i++) {
-        //     this.platforms[i] = new Platform(
-        //         randIntMinMax(50, 1600 - 100 - 50), //50 padding, 100 width on platform
-        //         randIntMinMax(50, 900 - 20 - 50), 
-        //         100, 
-        //         20,
-        //         "textureURL"
-        //     );
-        // }
     }
 
     draw(){
@@ -323,12 +302,27 @@ class Screen{
 
             for (let j = 0; j < this.data[i].length; j++) { //inner arr
                 
-                ctx.fillStyle = "#f0f";
-                ctx.font = "20px Georgia";
-                ctx.fillText(
-                    this.data[i][j],
-                    this.tileW * 2*j + 10,
-                    this.tileH * 2*i + 30
+                // ctx.fillStyle = "#f0f";
+                // ctx.font = "20px Georgia";
+                // ctx.fillText(
+                //     this.data[i][j],
+                //     this.tileW * 2*j + 10,
+                //     this.tileH * 2*i + 30
+                // );
+
+                //console.log(this.data[i][j], this.data[i][0]);
+                //console.log(i, j);
+                
+                ctx.drawImage(
+                    imgSpriteSheet,
+                    this.tileW * ((this.data[i][j]-1) % 7), 
+                    this.tileH * Math.floor((this.data[i][j]-1) / 7),
+                    this.tileW,
+                    this.tileH,
+                    this.tileW * 2 * j,// + (marginW),
+                    this.tileH * 2 * i + (marginH),
+                    this.tileW * 2,
+                    this.tileH * 2
                 );
                 
             }
@@ -553,6 +547,66 @@ class Shot extends Entity{
     }
 }
 
+class batEnemy extends Enemy {
+    constructor(x, y, w, h, ymin, ymax, imgObj){
+        super(x, y, w, h, false);
+        this.imgObj = imgObj;
+        this.lives = 1;
+        this.dy = 2;
+        this.ymin = ymin;
+        this.ymax = ymax;
+    }
+
+    draw () {
+        if ((this.y+this.dy+this.h) >= this.ymax || (this.y+this.dy) <= this.ymin){
+            this.dy = (-1) * this.dy;
+        }
+
+        ctx.drawImage(
+            this.imgObj,
+            this.x,
+            this.y,
+            this.w,
+            this.h
+            );
+
+        this.y = this.y + this.dy;
+    }
+}
+
+class markusEnemy extends Enemy {
+    constructor(x, y, w, h, xmin, xmax, imgObj){
+        super(x, y, w, h, true);
+        this.imgObj = imgObj;
+        this.lives = 2;
+        this.dx = 2;
+        this.xmin = xmin;
+        this.xmax = xmax;
+
+    }
+
+    draw () {
+        if ((this.x+this.dx+this.w) >= this.xmax || (this.x+this.dx) <= this.xmin){
+            this.dx = (-1) * this.dx;
+        }
+        if ( this.dx>0) {
+            this.imgObj = imgMarkusR;
+        }
+        else {
+            this.imgObj = imgMarkusL;
+        }
+
+        ctx.drawImage(
+            this.imgObj,
+            this.x,
+            this.y,
+            this.w,
+            this.h
+            );
+
+        this.x = this.x + this.dx;
+    }
+}
 
 class Boss extends Enemy {
     constructor(x, y, w, h, imgObj){
@@ -650,6 +704,10 @@ const parseURLParams = url => {
 const init = () => {
     window.reloading = setInterval(reloadInterval,100);
     
+    // Init level
+    window.imgSpriteSheet = new Image();
+    window.imgSpriteSheet.src = "./maps/tileset1.png";
+
     let positions = toObjURL.layout;//eks: [[1, 1], [1, 2], [2, 2], [2, 3]];
     let levelData = [
         toObjURL.screen1Data, 
@@ -671,7 +729,7 @@ const init = () => {
     // window.dummyLevel = new Level(dummyLevelPosArr); //window.xx fordi må være global
     // console.log(dummyLevel);
 
-    
+    //Init player + playerImg
     const imgMainChar = new Image();
     imgMainChar.src = "./media/main_character/spritesheet.png";
     const imgMainCharObj = {positons: [/*positions in spritesheet, can be obj*/], img: imgMainChar};
@@ -685,8 +743,21 @@ const init = () => {
     imgMadBoss.src = "./media/ufo_mad.png";
     window.Kristian = new Boss(canvW/2, canvH/2, 150*1.5, 92*1.5, imgBoss);
 
+    //Markusenemy 
+    window.imgMarkusL = new Image();
+    imgMarkusL.src = "./media/markus_left.png";
+    window.imgMarkusR = new Image();
+    imgMarkusR.src = "./media/markus_right.png";
+
+    //Batenemy example
+    window.imgBat = new Image();
+    imgBat.src = "./media/bat.PNG";
+
+    entities.push(new batEnemy(450,100,30,17,100,300,imgBat));
+    entities.push(new markusEnemy(300, 350, 87, 90, 300, 500, imgMarkusR));
+
     entities.push(new Enemy(1300, 100, 100, 100, true));
-    console.log(entities[0]);
+    console.log(entities);
 }
 function test(){
     for(var x in window.level.screens[window.mainCharacter.levelID].data){
@@ -712,7 +783,8 @@ const animate = () => {
     //dummyLevel.draw(mainCharacter.screenID/* screenID aka. hvor characteren e (+ vinduene foran/rundt) */);
 
     //| levelDraw
-    level.draw(mainCharacter.screenID);
+    //level.draw(mainCharacter.screenID);
+    level.screens[0].draw(); //midlertidig
 
     // draw skudd & check for hits
     for (let i = 0; i < window.shots.length; i++) {
@@ -726,7 +798,7 @@ const animate = () => {
     mainCharacter.draw();
 
     //| draw all (other) entities
-    entities.forEach(entety => entety.draw()); //mugligens flytte mainchar/player til dette array-et
+    entities.forEach(entity => entity.draw()); //mugligens flytte mainchar/player til dette array-et
 
     
 
