@@ -756,7 +756,7 @@ const init = () => {
     entities.push(new batEnemy(450,100,30,17,100,300,imgBat));
     entities.push(new markusEnemy(300, 350, 87, 90, 300, 500, imgMarkusR));
 
-    entities.push(new Enemy(1300, 100, 100, 100, true));
+    //entities.push(new Enemy(1300, 100, 100, 100, true));
     console.log(entities);
 }
 
