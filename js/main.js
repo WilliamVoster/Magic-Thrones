@@ -14,7 +14,7 @@ const marginW = 8; //32/4
 const marginH = 8;
 const border = 10; //in pixels
 const gravity = 0.5;//0.25;
-const entityScale = 0.5; //currently not in use
+const playerScale = 2/3;
 let countFrames = 0;
 let entities = [];
 window.shots = [];
@@ -320,7 +320,16 @@ class Screen{
                     this.tileW,
                     this.tileH,
                     this.tileW * 2 * j,// + (marginW),
-                    this.tileH * 2 * i + (marginH),
+                    this.tileH * 2 * i,// + (marginH),
+                    this.tileW * 2,
+                    this.tileH * 2
+                );
+
+                //Border på alle rutene
+                ctx.lineWidth = "0.3";
+                ctx.strokeRect(
+                    this.tileW * 2 * j,// + (marginW),
+                    this.tileH * 2 * i,// + (marginH),
                     this.tileW * 2,
                     this.tileH * 2
                 );
@@ -423,7 +432,8 @@ class Player extends Entity{
     constructor(x, y, w, h, gravityBoolean, imgObj){
         super(x, y, w, h, gravityBoolean);
         this.imgObj = imgObj;
-        //this.w = this.imgObj.img.offsetWidth;
+        this.w *= playerScale;
+        this.h *= playerScale;
 
         this.health = 3;
         this.score = 0;
@@ -495,18 +505,26 @@ class Player extends Entity{
         //| flyttet gravity til Entity-class
         for (let i = 0; i<Object.keys(spriteInfo).length; i++) {
             if (this.spriteState == Object.keys(spriteInfo)[i]) {
+                
+                let hitBoxFix = this.x; //flytter bilde litt til høyre hvis går til venstre
+                if(!this.faceDirection && this.walktime > 0){hitBoxFix -= this.w;}
+
                 ctx.drawImage(
                     this.imgObj.img,  //må være Image object - isje url / src
                     Object.values(spriteInfo)[i][0],
                     Object.values(spriteInfo)[i][1],
                     Object.values(spriteInfo)[i][2],
                     Object.values(spriteInfo)[i][3],
-                    this.x, 
+                    hitBoxFix, //generally = this.x
                     this.y,
-                    Object.values(spriteInfo)[i][2],
-                    Object.values(spriteInfo)[i][3]
+                    Object.values(spriteInfo)[i][2] * playerScale,
+                    Object.values(spriteInfo)[i][3] * playerScale
                 );
-                this.h = Object.values(spriteInfo)[i][3];
+                this.h = Object.values(spriteInfo)[i][3] * playerScale;
+
+                ctx.strokeStyle = "#000";
+                ctx.lineWidth = "3";
+                ctx.strokeRect(this.x, this.y, this.w, this.h);
             }
         }
     }
@@ -681,6 +699,7 @@ class Boss extends Enemy {
     }
 }
 
+
 const parseURLParams = url => {
     var queryStart = url.indexOf("?") + 1,
         queryEnd   = url.indexOf("#") + 1 || url.length + 1,
@@ -700,11 +719,60 @@ const parseURLParams = url => {
     }
     return parms;
 }
+
+const testHitbox = () => {
+    let playerX = mainCharacter.x + (mainCharacter.w/2);
+    let playerY = mainCharacter.y;
+    let data = level.screens[mainCharacter.screenID].data;
+    //let checkNums = [];
+
+    if(playerX < 0){playerX = 0}
+    if(playerY < 0){playerY = 0}
+
+    playerX /= (level.tileW * 2);
+    playerX = Math.floor(playerX);
+    playerY /= (level.tileH * 2);
+    playerY = Math.floor(playerY);
     
+    //* Viser hvilke hitbokser vi skal sjekke
+    for (let i = -1; i <= 3-1; i++) { //5 tiles i høyden (3 + 1 + 1) (playerH + margene)
+        for (let j = -1; j <= 1; j++) { //3 tiles i bredden (1 + 1 + 1) (playerW + margene)
+            
+            if(playerY + i >= 14){playerY -= 1} //index [13] e siste ytre array, -1 for å unngå error
+            if(playerX + j >= 25){playerX -= 1}
+            let tileVal = data[playerY + i][playerX + j];
+            
+            ctx.fillStyle = "#f003";
+            ctx.fillRect(
+                (playerX + j) * (level.tileW * 2),
+                (playerY + i) * (level.tileH * 2),
+                level.tileW * 2,
+                level.tileH * 2
+            );
+            ctx.fillStyle = "#000";
+            ctx.font = "30px Georgia";
+            ctx.fillText(
+                tileVal,
+                (playerX + j) * (level.tileW * 2) + 16,
+                (playerY + i) * (level.tileH * 2) + 32
+            );
+
+            
+        }
+        
+    }
+    
+
+    console.log(playerX, playerY);
+    //console.log(levelX, levelY);
+}
+
+
+
 const init = () => {
     window.reloading = setInterval(reloadInterval,100);
     
-    // Init level
+    //* Init level
     window.imgSpriteSheet = new Image();
     window.imgSpriteSheet.src = "./maps/tileset1.png";
 
@@ -715,7 +783,7 @@ const init = () => {
         toObjURL.screen3Data, 
         toObjURL.screen4Data
     ];
-    window.level = new Level(
+    window.level = new Level(           //| når skifte screen - husk å endre bakgrunnsbilde :)
         positions, 
         levelData, 
         toObjURL.width, 
@@ -725,50 +793,43 @@ const init = () => {
     );
     console.log(window.level);
     
-    // let dummyLevelPosArr = [[1, 1], [1, 2], [2, 2], [2, 3]];
-    // window.dummyLevel = new Level(dummyLevelPosArr); //window.xx fordi må være global
-    // console.log(dummyLevel);
 
-    //Init player + playerImg
+    //* Init player + playerImg
     const imgMainChar = new Image();
     imgMainChar.src = "./media/main_character/spritesheet.png";
     const imgMainCharObj = {positons: [/*positions in spritesheet, can be obj*/], img: imgMainChar};
-    window.mainCharacter = new Player(canvW-50, 900-275, 35*entityScale, 170*entityScale, true, imgMainCharObj); //35 x 170  =  dimentions of standing pic
+    window.mainCharacter = new Player(
+        canvW-50, 
+        900-275, 
+        35, 
+        170 /*35*entityScale, 170*entityScale*/, 
+        true, 
+        imgMainCharObj
+    );
     console.log(mainCharacter);
 
-    //Make boss
+    //* Make boss
     window.imgBoss = new Image();
     imgBoss.src = "./media/ufo_happy.png";
     window.imgMadBoss = new Image();
     imgMadBoss.src = "./media/ufo_mad.png";
     window.Kristian = new Boss(canvW/2, canvH/2, 150*1.5, 92*1.5, imgBoss);
 
-    //Markusenemy 
+    //* Markusenemy 
     window.imgMarkusL = new Image();
     imgMarkusL.src = "./media/markus_left.png";
     window.imgMarkusR = new Image();
     imgMarkusR.src = "./media/markus_right.png";
 
-    //Batenemy example
+    //* Batenemy example
     window.imgBat = new Image();
     imgBat.src = "./media/bat.PNG";
-
     entities.push(new batEnemy(450,100,30,17,100,300,imgBat));
     entities.push(new markusEnemy(300, 350, 87, 90, 300, 500, imgMarkusR));
 
     //entities.push(new Enemy(1300, 100, 100, 100, true));
     //console.log(entities);
-}
-function test(){
-    for(var x in window.level.screens[window.mainCharacter.levelID].data){
-        if(window.mainCharacter.x + window.mainCharacter.h >= window.level.screens[window.mainCharacter.levelID].data[x].x
-            
-            
-            
-        ){
 
-        }
-    }
 }
 
 //! GameLoop 
@@ -800,11 +861,11 @@ const animate = () => {
     //| draw all (other) entities
     entities.forEach(entity => entity.draw()); //mugligens flytte mainchar/player til dette array-et
 
-    
+    //midlertidig testing av 
+    testHitbox();
 
     //draw gameGUI
-    //test();
-
+    
     
     if(mainCharacter.screenID == 3 && Kristian.lives != 0) {Kristian.draw()}
 
