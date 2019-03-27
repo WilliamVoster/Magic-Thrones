@@ -824,8 +824,10 @@ const init = () => {
     //* Batenemy example
     window.imgBat = new Image();
     imgBat.src = "./media/bat.PNG";
-    entities.push(new batEnemy(450,100,30,17,100,300,imgBat));
-    entities.push(new markusEnemy(300, 350, 87, 90, 300, 500, imgMarkusR));
+    entities.push(new batEnemy(275,300,30,17,200,625,imgBat));
+    entities.push(new markusEnemy(1200, 230, 87, 90, 975, 1475, imgMarkusR));
+    entities.push(new markusEnemy(100, 745, 87, 90, 0, 600, imgMarkusR));
+    entities.push(new markusEnemy(300, 360, 87, 90, 300, 700, imgMarkusR));
 
     //entities.push(new Enemy(1300, 100, 100, 100, true));
     //console.log(entities);
