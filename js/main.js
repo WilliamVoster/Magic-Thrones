@@ -17,7 +17,7 @@ const gravity = 0.5;//0.25;
 const playerScale = 2/3;
 let countFrames = 0;
 let entities = [];
-window.shots = [];
+window.shots = []; 
 const spriteInfo = { //sx, sy, swidth, sheight
     stillR: [185,0,35,170],
     stillL: [150,0,35,170],
@@ -160,7 +160,7 @@ const keyEventDownHandler = e => {
         window.keyIntervalLeft = setInterval(intervalLeft, mainCharacter.updateSpeed);
         toggleIntervalL = !toggleIntervalL;
     }
-    if((e.keyCode == 87 || e.keyCode == 38) && !toggleIntervalU){
+    if((e.keyCode == 32) && !toggleIntervalU){
 
         //set direction = spriteState
         mainCharacter.faceDirection ? mainCharacter.spriteState = "jumpR" : mainCharacter.spriteState = "jumpL";
@@ -182,7 +182,7 @@ const keyEventDownHandler = e => {
         toggleHUDOverlay = !toggleHUDOverlay;
     }
 
-    if(e.keyCode == 32 && !toggleIntervalSpace){ //space
+    if(e.keyCode == 16 && !toggleIntervalSpace){ //space
         window.actionIntervalReload = setInterval(intervalShoot, 10); 
         toggleIntervalSpace = !toggleIntervalSpace;
     }
@@ -199,7 +199,7 @@ const keyEventUpHandler = e => {
         clearInterval(window.keyIntervalLeft);
         toggleIntervalL = !toggleIntervalL;
     }
-    if((e.keyCode == 87 || e.keyCode == 38) && toggleIntervalU){
+    if((e.keyCode == 32) && toggleIntervalU){
         clearInterval(window.keyIntervalUp);
         toggleIntervalU = !toggleIntervalU;
 
@@ -208,7 +208,7 @@ const keyEventUpHandler = e => {
         toggleIntervalD = !toggleIntervalD;
     }
 
-    if(e.keyCode == 32 && toggleIntervalSpace){
+    if(e.keyCode == 16 && toggleIntervalSpace){
         clearInterval(window.actionIntervalReload);
         //  window.intervalShootHasRun = false;
         toggleIntervalSpace = !toggleIntervalSpace;
@@ -429,13 +429,13 @@ class Enemy extends Entity{
 }
 
 class Player extends Entity{
-    constructor(x, y, w, h, gravityBoolean, imgObj){
+    constructor(x, y, w, h, gravityBoolean, imgObj, health){
         super(x, y, w, h, gravityBoolean);
         this.imgObj = imgObj;
         this.w *= playerScale;
         this.h *= playerScale;
 
-        this.health = 3;
+        this.health = health;
         this.score = 0;
         this.level = 0;
         this.screenID = 0;
@@ -444,7 +444,7 @@ class Player extends Entity{
         this.jumpHeight = 10; //10 => Y-speed = 10 pixels/frame
         this.faceDirection = true; //true for right, false for left
         this.walktime = 0;
-        this.spriteState = "stillR";
+        this.spriteState = "stillL";
         this.reload = true;
         this.reloadTime = 3; //1000 ==> every 1000th millisek
         this.reloadTimer = this.reloadTime;
@@ -456,12 +456,12 @@ class Player extends Entity{
             window.shots.push(
                 new Shot(
                     this.x + this.w / 2 - 25/2,
-                    this.y + this.h / 2 - 32,
-                    25,
-                    10,
+                    this.y + this.h / 2 - 20,
+                    15,
+                    7.5,
                     this.faceDirection ? 1 : -1, //direction - if true return 1 (aka x++ aka right) else left
                     0,
-                    10,     //projectile speed
+                    15,     //projectile speed
                     "#f90cda",  //colour
                     false
                 )
@@ -509,6 +509,10 @@ class Player extends Entity{
         if(playerReturn.x < 0){}
 
         //| Animations
+        if(this.health == 0) {
+            ctx.fillText("GAME OVER",canvW/2,canvH/2);
+        }
+
         if(this.airBool && this.faceDirection) {
             this.spriteState = "jumpR";
         } 
@@ -848,14 +852,15 @@ const init = () => {
     //* Init player + playerImg
     const imgMainChar = new Image();
     imgMainChar.src = "./media/main_character/spritesheet.png";
-    const imgMainCharObj = {positons: [/*positions in spritesheet, can be obj*/], img: imgMainChar};
+    window.imgMainCharObj = {positons: [/*positions in spritesheet, can be obj*/], img: imgMainChar};
     window.mainCharacter = new Player(
         canvW-50, 
         900-275, 
         35, 
         170 /*35*entityScale, 170*entityScale*/, 
         true, 
-        imgMainCharObj
+        imgMainCharObj,
+        3
     );
     console.log(mainCharacter);
 
@@ -875,8 +880,10 @@ const init = () => {
     //* Batenemy example
     window.imgBat = new Image();
     imgBat.src = "./media/bat.PNG";
-    entities.push(new batEnemy(450,100,30,17,100,300,imgBat));
-    entities.push(new markusEnemy(300, 350, 87, 90, 300, 500, imgMarkusR));
+    entities.push(new batEnemy(275,300,30,17,200,625,imgBat));
+    entities.push(new markusEnemy(1200, 230, 87, 90, 975, 1475, imgMarkusR));
+    entities.push(new markusEnemy(100, 745, 87, 90, 0, 600, imgMarkusR));
+    entities.push(new markusEnemy(300, 360, 87, 90, 300, 700, imgMarkusR));
 
     //entities.push(new Enemy(1300, 100, 100, 100, true));
     //console.log(entities);
@@ -899,13 +906,48 @@ const animate = () => {
     level.screens[mainCharacter.screenID].draw(); //midlertidig
 
     // draw skudd & check for hits
-    for (let i = 0; i < window.shots.length; i++) {
+    console.log();
+    shothitbox: for (let i = 0; i < window.shots.length; i++) {
+        //window.shots[i].draw();console.log(entities);
+        if (doesIntersect(Kristian,window.shots[i]) && !window.shots[i].enemy) {
+            Kristian.health--;
+            window.shots.splice(i, 1);
+            continue shothitbox;
+        }
+
+        for (let j = 0; j<entities.length; j++) {
+            if (doesIntersect(window.shots[i],entities[j]) && !window.shots[i].enemy) {
+                window.shots.splice(i, 1);
+                entities.splice(j, 1);
+                continue shothitbox;
+            }
+        }
+
+        if (doesIntersect(mainCharacter,window.shots[i]) && window.shots[i].enemy) {
+            mainCharacter.health--;
+            window.shots.splice(i, 1);  
+            console.log("OOF");
+            continue shothitbox
+        }
         window.shots[i].update();
-        //window.shots[i].draw();
-        /*if (doesIntersect(Kristian,window.shots[i])) {
-            console.log("U DED");
-        }*/
     }
+
+    for (let i = 0; i < entities.length; i++) {
+        if (doesIntersect(mainCharacter,entities[i])) {
+            let hp = mainCharacter.health - 1;
+            window.mainCharacter = new Player(
+                canvW-50, 
+                900-275, 
+                35, 
+                170 /*35*entityScale, 170*entityScale*/, 
+                true, 
+                imgMainCharObj,
+                hp
+            );
+        }
+    }
+    
+
     //| draw mainChar
     mainCharacter.draw();
 
@@ -920,10 +962,7 @@ const animate = () => {
     
     if(mainCharacter.screenID == 3 && Kristian.lives != 0) {Kristian.draw()}
 
-    for (let i = 0; i < window.shots.length; i++) {
-        window.shots[i].update();
-        //window.shots[i].draw();
-    }
+
 
     requestAnimationFrame(animate);
 }
