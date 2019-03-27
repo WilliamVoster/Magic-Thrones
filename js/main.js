@@ -460,7 +460,7 @@ class Player extends Entity{
                     7.5,
                     this.faceDirection ? 1 : -1, //direction - if true return 1 (aka x++ aka right) else left
                     0,
-                    10,     //projectile speed
+                    15,     //projectile speed
                     "#f90cda",  //colour
                     false
                 )
