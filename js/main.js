@@ -442,7 +442,7 @@ class Player extends Entity{
         this.updateSpeed = 2; //interval - hvert 2-ende millisek
         this.speed = 7;
         this.jumpHeight = 10; //10 => Y-speed = 10 pixels/frame
-        this.faceDirection = true; //true for right, false for left
+        this.faceDirection = false; //true for right, false for left
         this.walktime = 0;
         this.spriteState = "stillL";
         this.reload = true;
@@ -460,7 +460,7 @@ class Player extends Entity{
                     7.5,
                     this.faceDirection ? 1 : -1, //direction - if true return 1 (aka x++ aka right) else left
                     0,
-                    15,     //projectile speed
+                    10,     //projectile speed
                     "#f90cda",  //colour
                     false
                 )
@@ -490,7 +490,7 @@ class Player extends Entity{
     draw(){
         super.draw(false); //false pga. ikke tegne (fillrect fra super) svart bakgrunn
 
-        if(this.health == 0) {
+        if(this.health < 0) {
             ctx.fillText("GAME OVER",canvW/2,canvH/2);
         }
 
@@ -883,7 +883,7 @@ const animate = () => {
 
     for (let i = 0; i < entities.length; i++) {
         if (doesIntersect(mainCharacter,entities[i])) {
-            let hp = mainCharacter.health - 1;
+            let stats = [mainCharacter.health - 1];
             window.mainCharacter = new Player(
                 canvW-50, 
                 900-275, 
@@ -891,7 +891,7 @@ const animate = () => {
                 170 /*35*entityScale, 170*entityScale*/, 
                 true, 
                 imgMainCharObj,
-                hp
+                stats[0]
             );
         }
     }
