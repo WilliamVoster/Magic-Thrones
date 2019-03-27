@@ -444,7 +444,7 @@ class Player extends Entity{
         this.jumpHeight = 10; //10 => Y-speed = 10 pixels/frame
         this.faceDirection = true; //true for right, false for left
         this.walktime = 0;
-        this.spriteState = "stillR";
+        this.spriteState = "stillL";
         this.reload = true;
         this.reloadTime = 3; //1000 ==> every 1000th millisek
         this.reloadTimer = this.reloadTime;
@@ -489,6 +489,10 @@ class Player extends Entity{
 
     draw(){
         super.draw(false); //false pga. ikke tegne (fillrect fra super) svart bakgrunn
+
+        if(this.health == 0) {
+            ctx.fillText("GAME OVER",canvW/2,canvH/2);
+        }
 
         if(this.airBool && this.faceDirection) {
             this.spriteState = "jumpR";
@@ -848,13 +852,26 @@ const animate = () => {
     level.screens[0].draw(); //midlertidig
 
     // draw skudd & check for hits
+
     for (let i = 0; i < window.shots.length; i++) {
         window.shots[i].update();
-        //window.shots[i].draw();
-        /*if (doesIntersect(Kristian,window.shots[i])) {
-            console.log("U DED");
+        //window.shots[i].draw();console.log(entities);
+        /*if (doesIntersect(Kristian,window.shots[i]) && window.shots[i].enemy) {
+            Kristian.health--;
+            window.shots.splice(i, 1);
+            break;
+        }
+        for (let j = 0; j<entities.length; j++) {
+            if (doesIntersect(window.shots[i],entities[j]) && !window.shots[i].enemy) {
+                window.shots.splice(i, 1);
+                window.entities.splice(j,1);
+                break;
+            }
         }*/
+        
     }
+    
+
     //| draw mainChar
     mainCharacter.draw();
 
@@ -869,10 +886,7 @@ const animate = () => {
     
     if(mainCharacter.screenID == 3 && Kristian.lives != 0) {Kristian.draw()}
 
-    for (let i = 0; i < window.shots.length; i++) {
-        window.shots[i].update();
-        //window.shots[i].draw();
-    }
+
 
     requestAnimationFrame(animate);
 }
