@@ -910,7 +910,7 @@ const animate = () => {
     shothitbox: for (let i = 0; i < window.shots.length; i++) {
         //window.shots[i].draw();console.log(entities);
         if (doesIntersect(Kristian,window.shots[i]) && !window.shots[i].enemy) {
-            Kristian.health--;
+            Kristian.lives--;
             window.shots.splice(i, 1);
             continue shothitbox;
         }
