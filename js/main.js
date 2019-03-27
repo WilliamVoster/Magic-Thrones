@@ -233,17 +233,17 @@ class Entity{
         //| if gravity is on -> fall every frame
         if(this.gravityBoolean){
 
-            if(this.y + this.h > canvH - border){ 
-                this.velY = 0, this.airBool = false;
-                this.y = canvH - border - this.h;
+            // if(this.y + this.h > canvH - border){ 
+            //     this.velY = 0, this.airBool = false;
+            //     this.y = canvH - border - this.h;
     
-            }else if(this.y + this.h < canvH - border){
+            // }else if(this.y + this.h < canvH - border){
                 this.velY = Math.floor(this.velY * 100) / 100; //grov avrunding
                 //console.log(this.velY);
 
                 this.velY += -gravity;
                 //this.gravitySpeed += this.velY;
-            }
+            //}
 
             //this.y += - this.velY; //negative because this.y++ => down on canvas (positive y-axis => downwards)
             this.y += -this.velY//this.gravitySpeed;
@@ -448,6 +448,7 @@ class Player extends Entity{
         this.reload = true;
         this.reloadTime = 3; //1000 ==> every 1000th millisek
         this.reloadTimer = this.reloadTime;
+        this.xHitBox = 0;
     }
 
     shoot(){
@@ -482,7 +483,12 @@ class Player extends Entity{
             this.airBool = true;
         }
         if(direction[0] != 0){
-            this.velX = direction[0] * this.speed;
+            let dir = direction[0] * this.speed;
+            if(
+                (this.xHitBox < 0 && dir < 0) || 
+                (this.xHitBox > 0 && dir > 0)
+            ){dir = 0}
+            this.velX = dir;
         }
         
     }
@@ -490,7 +496,20 @@ class Player extends Entity{
     draw(){
         super.draw(false); //false pga. ikke tegne (fillrect fra super) svart bakgrunn
 
-        if(this.health < 0) {
+        //| check hitbox
+        let playerReturn = playerHitbox();
+        this.xHitBox = playerReturn.x;
+        if(playerReturn.y > 0){ 
+            this.velY = 0, this.airBool = false;
+            this.y = 
+            playerReturn.y + (2 * 2 * 32) //2 + 2*tileH
+            - (Object.values(spriteInfo)[0][3] * playerScale)
+            - border;
+        }
+        if(playerReturn.x < 0){}
+
+        //| Animations
+        if(this.health == 0) {
             ctx.fillText("GAME OVER",canvW/2,canvH/2);
         }
 
@@ -724,9 +743,12 @@ const parseURLParams = url => {
     return parms;
 }
 
-const testHitbox = () => {
-    let playerX = mainCharacter.x + (mainCharacter.w/2);
+const playerHitbox = () => {
+    let playerX = mainCharacter.x;
+    if(mainCharacter.faceDirection){playerX += mainCharacter.w}
     let playerY = mainCharacter.y;
+    let playerH = mainCharacter.h;
+    let playerW = mainCharacter.w;
     let data = level.screens[mainCharacter.screenID].data;
     //let checkNums = [];
 
@@ -746,6 +768,7 @@ const testHitbox = () => {
             if(playerX + j >= 25){playerX -= 1}
             let tileVal = data[playerY + i][playerX + j];
             
+            //| Draw tiles to scan
             ctx.fillStyle = "#f003";
             ctx.fillRect(
                 (playerX + j) * (level.tileW * 2),
@@ -759,15 +782,43 @@ const testHitbox = () => {
                 tileVal,
                 (playerX + j) * (level.tileW * 2) + 16,
                 (playerY + i) * (level.tileH * 2) + 32
-            );
+            ); 
 
-            
         }
-        
     }
     
+    //| Check for hitboxes
+    let returnVal = {x: 0, y: 0}
+    if( 
+        data[playerY + 2][playerX + 0] > 7*5 &&
+        data[playerY + 2][playerX + 0] <= 7*8
+    ){
+        console.log(data[playerY + 2][playerX]);
+        returnVal.y = playerY * level.tileH * 2;
+    }
+    if(
+        // data[playerY + 2][playerX-1] > 7*5 &&
+        // data[playerY + 2][playerX-1] <= 7*8 &&
 
-    console.log(playerX, playerY);
+        data[playerY][playerX-1] > 7*5 &&
+        data[playerY][playerX-1] <= 7*8
+    ){
+        returnVal.x = -1;
+        // console.log("left");
+    }else if(
+        // data[playerY + 2][playerX+1] > 7*5 &&
+        // data[playerY + 2][playerX+1] <= 7*8 &&
+
+        data[playerY][playerX+1] > 7*5 &&
+        data[playerY][playerX+1] <= 7*8
+    ){
+        returnVal.x = +1;
+        // console.log("right");
+    }
+    return returnVal;
+
+
+    //console.log(playerX, playerY);
     //console.log(levelX, levelY);
 }
 
@@ -852,14 +903,14 @@ const animate = () => {
 
     //| levelDraw
     //level.draw(mainCharacter.screenID);
-    level.screens[0].draw(); //midlertidig
+    level.screens[mainCharacter.screenID].draw(); //midlertidig
 
     // draw skudd & check for hits
     console.log();
     shothitbox: for (let i = 0; i < window.shots.length; i++) {
         //window.shots[i].draw();console.log(entities);
         if (doesIntersect(Kristian,window.shots[i]) && !window.shots[i].enemy) {
-            Kristian.health--;
+            Kristian.lives--;
             window.shots.splice(i, 1);
             continue shothitbox;
         }
@@ -904,7 +955,7 @@ const animate = () => {
     entities.forEach(entity => entity.draw()); //mugligens flytte mainchar/player til dette array-et
 
     //midlertidig testing av 
-    testHitbox();
+    //playerHitbox();
 
     //draw gameGUI
     
