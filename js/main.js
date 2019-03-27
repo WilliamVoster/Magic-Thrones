@@ -17,7 +17,7 @@ const gravity = 0.5;//0.25;
 const playerScale = 2/3;
 let countFrames = 0;
 let entities = [];
-window.shots = [];
+window.shots = []; 
 const spriteInfo = { //sx, sy, swidth, sheight
     stillR: [185,0,35,170],
     stillL: [150,0,35,170],
@@ -429,13 +429,13 @@ class Enemy extends Entity{
 }
 
 class Player extends Entity{
-    constructor(x, y, w, h, gravityBoolean, imgObj){
+    constructor(x, y, w, h, gravityBoolean, imgObj, health){
         super(x, y, w, h, gravityBoolean);
         this.imgObj = imgObj;
         this.w *= playerScale;
         this.h *= playerScale;
 
-        this.health = 3;
+        this.health = health;
         this.score = 0;
         this.level = 0;
         this.screenID = 0;
@@ -801,14 +801,15 @@ const init = () => {
     //* Init player + playerImg
     const imgMainChar = new Image();
     imgMainChar.src = "./media/main_character/spritesheet.png";
-    const imgMainCharObj = {positons: [/*positions in spritesheet, can be obj*/], img: imgMainChar};
+    window.imgMainCharObj = {positons: [/*positions in spritesheet, can be obj*/], img: imgMainChar};
     window.mainCharacter = new Player(
         canvW-50, 
         900-275, 
         35, 
         170 /*35*entityScale, 170*entityScale*/, 
         true, 
-        imgMainCharObj
+        imgMainCharObj,
+        3
     );
     console.log(mainCharacter);
 
@@ -854,23 +855,45 @@ const animate = () => {
     level.screens[0].draw(); //midlertidig
 
     // draw skudd & check for hits
-
-    for (let i = 0; i < window.shots.length; i++) {
-        window.shots[i].update();
+    console.log();
+    shothitbox: for (let i = 0; i < window.shots.length; i++) {
         //window.shots[i].draw();console.log(entities);
-        /*if (doesIntersect(Kristian,window.shots[i]) && window.shots[i].enemy) {
+        if (doesIntersect(Kristian,window.shots[i]) && !window.shots[i].enemy) {
             Kristian.health--;
             window.shots.splice(i, 1);
-            break;
+            continue shothitbox;
         }
+
         for (let j = 0; j<entities.length; j++) {
             if (doesIntersect(window.shots[i],entities[j]) && !window.shots[i].enemy) {
                 window.shots.splice(i, 1);
-                window.entities.splice(j,1);
-                break;
+                entities.splice(j, 1);
+                continue shothitbox;
             }
-        }*/
-        
+        }
+
+        if (doesIntersect(mainCharacter,window.shots[i]) && window.shots[i].enemy) {
+            mainCharacter.health--;
+            window.shots.splice(i, 1);  
+            console.log("OOF");
+            continue shothitbox
+        }
+        window.shots[i].update();
+    }
+
+    for (let i = 0; i < entities.length; i++) {
+        if (doesIntersect(mainCharacter,entities[i])) {
+            let hp = mainCharacter.health - 1;
+            window.mainCharacter = new Player(
+                canvW-50, 
+                900-275, 
+                35, 
+                170 /*35*entityScale, 170*entityScale*/, 
+                true, 
+                imgMainCharObj,
+                hp
+            );
+        }
     }
     
 
