@@ -160,7 +160,7 @@ const keyEventDownHandler = e => {
         window.keyIntervalLeft = setInterval(intervalLeft, mainCharacter.updateSpeed);
         toggleIntervalL = !toggleIntervalL;
     }
-    if((e.keyCode == 87 || e.keyCode == 38) && !toggleIntervalU){
+    if((e.keyCode == 32) && !toggleIntervalU){
 
         //set direction = spriteState
         mainCharacter.faceDirection ? mainCharacter.spriteState = "jumpR" : mainCharacter.spriteState = "jumpL";
@@ -182,7 +182,7 @@ const keyEventDownHandler = e => {
         toggleHUDOverlay = !toggleHUDOverlay;
     }
 
-    if(e.keyCode == 32 && !toggleIntervalSpace){ //space
+    if(e.keyCode == 16 && !toggleIntervalSpace){ //space
         window.actionIntervalReload = setInterval(intervalShoot, 10); 
         toggleIntervalSpace = !toggleIntervalSpace;
     }
@@ -199,7 +199,7 @@ const keyEventUpHandler = e => {
         clearInterval(window.keyIntervalLeft);
         toggleIntervalL = !toggleIntervalL;
     }
-    if((e.keyCode == 87 || e.keyCode == 38) && toggleIntervalU){
+    if((e.keyCode == 32) && toggleIntervalU){
         clearInterval(window.keyIntervalUp);
         toggleIntervalU = !toggleIntervalU;
 
@@ -208,7 +208,7 @@ const keyEventUpHandler = e => {
         toggleIntervalD = !toggleIntervalD;
     }
 
-    if(e.keyCode == 32 && toggleIntervalSpace){
+    if(e.keyCode == 16 && toggleIntervalSpace){
         clearInterval(window.actionIntervalReload);
         //  window.intervalShootHasRun = false;
         toggleIntervalSpace = !toggleIntervalSpace;
@@ -455,9 +455,9 @@ class Player extends Entity{
             window.shots.push(
                 new Shot(
                     this.x + this.w / 2 - 25/2,
-                    this.y + this.h / 2 - 32,
-                    25,
-                    10,
+                    this.y + this.h / 2 - 20,
+                    15,
+                    7.5,
                     this.faceDirection ? 1 : -1, //direction - if true return 1 (aka x++ aka right) else left
                     0,
                     10,     //projectile speed
@@ -828,8 +828,10 @@ const init = () => {
     //* Batenemy example
     window.imgBat = new Image();
     imgBat.src = "./media/bat.PNG";
-    entities.push(new batEnemy(450,100,30,17,100,300,imgBat));
-    entities.push(new markusEnemy(300, 350, 87, 90, 300, 500, imgMarkusR));
+    entities.push(new batEnemy(275,300,30,17,200,625,imgBat));
+    entities.push(new markusEnemy(1200, 230, 87, 90, 975, 1475, imgMarkusR));
+    entities.push(new markusEnemy(100, 745, 87, 90, 0, 600, imgMarkusR));
+    entities.push(new markusEnemy(300, 360, 87, 90, 300, 700, imgMarkusR));
 
     //entities.push(new Enemy(1300, 100, 100, 100, true));
     //console.log(entities);
