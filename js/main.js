@@ -117,6 +117,7 @@ const playerHitbox = () => {
     let playerW = mainCharacter.w;
     let faceDir = mainCharacter.faceDirection;
     let data = level.screens[mainCharacter.screenID].data;
+    let OOB = false; //OutOfBounds
     //let checkNums = [];
     
     playerX /= (level.tileW * 2);
@@ -124,11 +125,12 @@ const playerHitbox = () => {
     playerY /= (level.tileH * 2);
     playerY = Math.floor(playerY);
 
-    if(playerX -1 <= 0){playerX = 0}
-    if(playerX +1 >= 25){playerX = 24}
-    if(playerY -1 <= 0){playerY = 0}
-    if(playerY +2 >= 14){playerY = 13}
-    
+    if(playerX < 0){playerX = 0}
+    if(playerX >= 25){playerX = 24}
+    if(playerY < 0){playerY = 0}
+    if(playerY >= 14){playerY = 13}
+
+    if(playerY + 2 > 13 || playerY -1 < 0 ){OOB = true}
     
     //* Viser hvilke hitbokser vi skal sjekke
     for (let i = -1; i <= 3-1; i++) { //5 tiles i høyden (3 + 1 + 1) (playerH + margene)
@@ -142,9 +144,9 @@ const playerHitbox = () => {
             // if(playerX + j < 0){playerX = 0 -j}
 
             if(pYinData < 0){pYinData = 0}
-            if(pYinData > 14){pYinData = 14}
+            if(pYinData > 13){pYinData = 13}
             if(pXinData < 0){pXinData = 0}
-            if(pXinData > 25){pXinData = 25}
+            if(pXinData > 24){pXinData = 24}
 
             //console.log(playerY + i ,playerX + j);
             let tileVal = data[pYinData][pXinData];
@@ -174,7 +176,6 @@ const playerHitbox = () => {
 
         }
     }
-    
 
     //| Check for hitboxes
     //if turn on spot w face out of platform fall down -- fiX!
@@ -183,9 +184,12 @@ const playerHitbox = () => {
     let xPosInTile = mainCharacter.x - (playerX * level.tileW * 2);
     let yPosInTile = mainCharacter.y - (playerY * level.tileH * 2); //px to the current line over player
     if(faceDir){xPosInTile += playerW;}
-    //console.log(playerY, yPosInTile);
-    let returnVal = {x: 0, y: 0, ladder: false}
+    //console.log(playerX, xPosInTile, playerY, yPosInTile);
+    let returnVal = {x: 0, y: 0, ladder: false, stopJump: false, OOB: OOB}
     
+    //| check if Out Of Bounds
+    if(OOB){return returnVal}
+
     //*Y-dir
     if( 
         (
@@ -206,21 +210,25 @@ const playerHitbox = () => {
     ){
         //console.log(data[playerY + 2][playerX]);
         returnVal.y = playerY * level.tileH * 2;
-    }else if( //hitbox above:::
+    }
+    if( //hitbox above:::
         (
             //check tile behind if between 2 tiles (facing right) && close to tile above
+            playerY > 0 && //fix for error when above map
             yPosInTile <= 2 &&
             xPosInTile <= playerW && faceDir &&
             data[playerY-1][playerX-1] > 7*5 &&
             data[playerY-1][playerX-1] <= 7*8
         )||(
             //check tile behind if between 2 tiles (facing left) && close to tile above
+            playerY > 0 && //fix for error when above map
             yPosInTile <= 2 &&
             level.tileW * 2 - xPosInTile <= playerW && !faceDir &&
             data[playerY-1][playerX+1] > 7*5 &&
             data[playerY-1][playerX+1] <= 7*8
         )||(
             //check if close to tile above
+            playerY > 0 && //fix for error when above map
             yPosInTile <= 2 &&
             data[playerY-1][playerX] > 7*5 &&
             data[playerY-1][playerX] <= 7*8
@@ -228,26 +236,57 @@ const playerHitbox = () => {
     ){
         //hit head
         //console.log("hit ur head!");
-        console.log(playerY, yPosInTile);
+        //console.log(playerY, yPosInTile);
         returnVal.y = -1;
     }
-
+    
+    //| if tile just above player => stop jumping
+    if(
+        (
+            //check tile behind if between 2 tiles (facing right) && close to tile above
+            playerY > 0 && //fix for error when above map
+            yPosInTile <= 10 &&
+            xPosInTile <= playerW && faceDir &&
+            data[playerY-1][playerX-1] > 7*5 &&
+            data[playerY-1][playerX-1] <= 7*8
+        )||(
+            //check tile behind if between 2 tiles (facing left) && close to tile above
+            playerY > 0 && //fix for error when above map
+            yPosInTile <= 10 &&
+            level.tileW * 2 - xPosInTile <= playerW && !faceDir &&
+            data[playerY-1][playerX+1] > 7*5 &&
+            data[playerY-1][playerX+1] <= 7*8
+        )||(
+            //check if close to tile above
+            playerY > 0 && //fix for error when above map
+            yPosInTile <= 10 &&
+            data[playerY-1][playerX] > 7*5 &&
+            data[playerY-1][playerX] <= 7*8
+        )
+    ){
+        returnVal.stopJump = true;
+    }
+    
     //*X-dir
     if(
         //if player more left than the tile to the left of player
         ( //check legs height
-            xPosInTile <= 0+5 &&
+            xPosInTile <= 0+8 &&
             data[playerY+1][playerX-1] > 7*5 && 
             data[playerY+1][playerX-1] <= 7*8
         )||( //check head height
-            xPosInTile <= 0+5 &&
+            xPosInTile <= 0+8 &&
             data[playerY][playerX-1] > 7*5 && 
             data[playerY][playerX-1] <= 7*8
+        )||(
+            playerX <= 0 &&
+            xPosInTile <= 0+5
         )
     ){
         returnVal.x = -1;
         // console.log("left");
-    }else if(
+    }
+    if(
         //if player more right than the tile to the right of player
         ( //check legs height
             xPosInTile >= 63-5 &&
@@ -257,6 +296,9 @@ const playerHitbox = () => {
             xPosInTile >= 63-5 &&
             data[playerY][playerX+1] > 7*5 && 
             data[playerY][playerX+1] <= 7*8
+        )||(
+            playerX >= 24 &&
+            xPosInTile >= 63-5
         )
     ){
         returnVal.x = +1;
@@ -278,6 +320,13 @@ const playerHitbox = () => {
     ){
         //console.log("LADDER!!!");
         returnVal.ladder = true;
+
+        let currFinishPos = toObjURL.screenCompletePos[mainCharacter.screenID];
+        // console.log(currFinishPos, playerX, playerY);
+        if(playerX >= currFinishPos[0] && playerY <= currFinishPos[1]){
+            console.log("Winner!");
+            newScreen(mainCharacter.screenID +1);
+        }
     }
     //console.log(returnVal);
     return returnVal;
@@ -287,6 +336,28 @@ const playerHitbox = () => {
     //console.log(levelX, levelY);
 }
 
+const createEnemies = () => {
+    entities = [];
+    toObjURL.enemyPosArr[mainCharacter.screenID].bat.forEach(arr => {
+        entities.push(new batEnemy(arr[0], arr[1], arr[2], arr[3], arr[4], arr[5], imgBat));
+    });
+    toObjURL.enemyPosArr[mainCharacter.screenID].mark.forEach(arr => {
+        entities.push(new markusEnemy(arr[0], arr[1], arr[2], arr[3], arr[4], arr[5], imgMarkusR));
+    });
+}
+
+const newScreen = currId => {
+
+    if(currId > 3 || currId < 0){return}
+
+    mainCharacter.screenID = currId;
+
+    let screenSpawnPos = toObjURL.screenSpawnPos[mainCharacter.screenID];
+    mainCharacter.x = screenSpawnPos[0] * level.tileW * 2;
+    mainCharacter.y = screenSpawnPos[1] * level.tileH * 2;
+
+    createEnemies();
+}
 
 //! keyListener
 {
@@ -513,17 +584,17 @@ class Screen{
                 //console.log(i, j);
                 
                 //| draw screen every frame
-                // ctx.drawImage(
-                //     imgSpriteSheet,
-                //     this.tileW * ((this.data[i][j]-1) % 7) -0, 
-                //     this.tileH * Math.floor((this.data[i][j]-1) / 7) -0,
-                //     this.tileW,
-                //     this.tileH,
-                //     this.tileW * 2 * j,// + (marginW),
-                //     this.tileH * 2 * i,// + (marginH),
-                //     this.tileW * 2,
-                //     this.tileH * 2
-                // );
+                ctx.drawImage(
+                    imgSpriteSheet,
+                    this.tileW * ((this.data[i][j]-1) % 7) -0, 
+                    this.tileH * Math.floor((this.data[i][j]-1) / 7) -0,
+                    this.tileW,
+                    this.tileH,
+                    this.tileW * 2 * j,// + (marginW),
+                    this.tileH * 2 * i,// + (marginH),
+                    this.tileW * 2,
+                    this.tileH * 2
+                );
 
 
                 //?legg bare te hvis type=air/move through (fra 7 => 7*3)
@@ -643,7 +714,7 @@ class Player extends Entity{
         this.health = health;
         this.score = 0;
         this.level = 0;
-        this.screenID = 0;
+        this.screenID = 0
         this.updateSpeed = 2; //interval - hvert 2-ende millisek
         this.speed = 7;
         this.jumpHeight = 10; //10 => Y-speed = 10 pixels/frame
@@ -678,21 +749,21 @@ class Player extends Entity{
     
     update(direction){ //moving player - direction from keylistner
         
-        // if not pressing "down" while at bottom of screen &&and&& not pressing up while mid-air
         if(this.hitLadder){
             if(direction[1] < 0){
-                console.log("up!");
+                //console.log("up!");
                 this.y += -2;//this.speed / 2;
             }else if(direction[1] > 0){
-                console.log("down!");
+                //console.log("down!");
                 this.y += 2;//this.speed / 2;
             }
-        }else if (
+        }else if(
+            // if not pressing "down" while at bottom of screen &&and&& not pressing up while mid-air
             !(-direction[1] < 0 && this.y + this.h >= canvH - border) && 
             !this.airBool &&  //-!(-direction[1] > 0 && this.velY < 0)
-            direction[1] != 0
+            direction[1] != 0 &&
+            !playerHitbox().stopJump
             ){
-
             this.velY += this.jumpHeight * -direction[1]; // ( * mainCharacter.speed;
             this.airBool = true;
         }
@@ -721,6 +792,11 @@ class Player extends Entity{
 
         //| check yhitbox
         let playerReturn = playerHitbox();
+        if(playerReturn.OOB){
+            this.health = 0;
+            console.log("U LOOSE! => Out Of Bounds!"); 
+        }
+        //console.log(playerReturn);
         this.xHitBox = playerReturn.x;
         this.hitLadder = playerReturn.ladder;
         if(playerReturn.y > 0 && !this.hitLadder){ 
@@ -772,9 +848,9 @@ class Player extends Entity{
                 this.h = Object.values(spriteInfo)[i][3] * playerScale;
                 this.h = Math.floor(this.h) // * 100 ) / 100;
 
-                ctx.strokeStyle = "#000";
-                ctx.lineWidth = "3";
-                ctx.strokeRect(this.x, this.y, this.w, this.h);
+                // ctx.strokeStyle = "#000";
+                // ctx.lineWidth = "3";
+                // ctx.strokeRect(this.x, this.y, this.w, this.h);
             }
         }
     }
@@ -826,7 +902,10 @@ class batEnemy extends Enemy {
     }
 
     draw () {
-        if ((this.y+this.dy+this.h) >= this.ymax || (this.y+this.dy) <= this.ymin){
+        if (
+            (this.y+this.dy+this.h) >= this.ymax || 
+            (this.y+this.dy) <= this.ymin
+        ){
             this.dy = (-1) * this.dy;
         }
 
@@ -838,7 +917,7 @@ class batEnemy extends Enemy {
             this.h
             );
 
-        this.y = this.y + this.dy;
+        this.y += this.dy;
     }
 }
 
@@ -1004,17 +1083,10 @@ const init = () => {
     imgMarkusR.src = "./media/markus_right.png";
 
     //* Batenemy example
-    let enemyPosArr = toObjURL.enemyPosArr;
     window.imgBat = new Image();
     imgBat.src = "./media/bat.PNG";
     //console.log(enemyPosArr[mainCharacter.screenID]);
-    enemyPosArr[mainCharacter.screenID].bat.forEach(arr => {
-        entities.push(new batEnemy(arr[0], arr[1], arr[2], arr[3], arr[4], arr[5], imgBat));
-    });
-    enemyPosArr[mainCharacter.screenID].mark.forEach(arr => {
-        entities.push(new markusEnemy(arr[0], arr[1], arr[2], arr[3], arr[4], arr[5], imgMarkusR));
-    });
-
+    createEnemies();
 
 }
 
@@ -1092,7 +1164,11 @@ const animate = () => {
 
 
 
-    requestAnimationFrame(animate);
+    if(mainCharacter.health > 0){
+        requestAnimationFrame(animate);
+    }else{
+        showHUD("GAME OVER", `Health: ${mainCharacter.health}`);
+    }
 }
 
 window.onload = () => {
