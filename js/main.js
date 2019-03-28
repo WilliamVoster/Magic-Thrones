@@ -1007,23 +1007,14 @@ const init = () => {
     let enemyPosArr = toObjURL.enemyPosArr;
     window.imgBat = new Image();
     imgBat.src = "./media/bat.PNG";
-    console.log(enemyPosArr[mainCharacter.screenID]);
-    for(let enemy in enemyPosArr[mainCharacter.screenID]){
-        console.log(enemy.bat);
-        entities.push(new batEnemy(enemy[0], enemy[1], enemy[2], enemy[3], enemy[4], enemy[5], imgBat));
-    }
-    for(let enemy in enemyPosArr[mainCharacter.screenID]){
-        console.log(enemy.mark);
-        entities.push(new markusEnemy(enemy[0], enemy[1], enemy[2], enemy[3], enemy[4], enemy[5], imgMarkusR));
-    }
-    
-    // entities.push(new batEnemy(275,300,30,17,200,625,imgBat));
-    // entities.push(new markusEnemy(1200, 230, 87, 90, 975, 1475, imgMarkusR));
-    // entities.push(new markusEnemy(100, 745, 87, 90, 0, 600, imgMarkusR));
-    // entities.push(new markusEnemy(300, 360, 87, 90, 300, 700, imgMarkusR));
+    //console.log(enemyPosArr[mainCharacter.screenID]);
+    enemyPosArr[mainCharacter.screenID].bat.forEach(arr => {
+        entities.push(new batEnemy(arr[0], arr[1], arr[2], arr[3], arr[4], arr[5], imgBat));
+    });
+    enemyPosArr[mainCharacter.screenID].mark.forEach(arr => {
+        entities.push(new markusEnemy(arr[0], arr[1], arr[2], arr[3], arr[4], arr[5], imgMarkusR));
+    });
 
-    //entities.push(new Enemy(1300, 100, 100, 100, true));
-    //console.log(entities);
 
 }
 
@@ -1125,4 +1116,3 @@ window.onload = () => {
         console.log("redirecting!");
     }
 }
-//hei
