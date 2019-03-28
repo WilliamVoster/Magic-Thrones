@@ -130,7 +130,7 @@ const playerHitbox = () => {
     if(playerY < 0){playerY = 0}
     if(playerY >= 14){playerY = 13}
 
-    if(playerY + 2 > 13 || playerY -1 < 0 ){OOB = true}
+    if(playerY + 2 > 13 || playerY < 0 ){OOB = true}
     
     //* Viser hvilke hitbokser vi skal sjekke
     // for (let i = -1; i <= 3-1; i++) { //5 tiles i høyden (3 + 1 + 1) (playerH + margene)
@@ -186,30 +186,32 @@ const playerHitbox = () => {
     if(faceDir){xPosInTile += playerW;}
     //console.log(playerX, xPosInTile, playerY, yPosInTile);
     let returnVal = {x: 0, y: 0, ladder: false, stopJump: false, OOB: OOB}
-    
+
     //| check if Out Of Bounds
-    if(OOB){return returnVal}
+    //if(OOB){return returnVal}
 
     //*Y-dir
-    if( 
-        (
-            //check tile behind if between 2 tiles (facing right)
-            xPosInTile <= playerW && faceDir &&
-            data[playerY+2][playerX-1] > 7*4 &&
-            data[playerY+2][playerX-1] <= 7*8
-        )||(
-            //check tile behind if between 2 tiles (facing left)
-            level.tileW * 2 - xPosInTile <= playerW && !faceDir &&
-            data[playerY+2][playerX+1] > 7*4 &&
-            data[playerY+2][playerX+1] <= 7*8
-        )||(
-            //check tile beneath
-            data[playerY+2][playerX] > 7*4 &&
-            data[playerY+2][playerX] <= 7*8
-        )
-    ){
-        //console.log(data[playerY + 2][playerX]);
-        returnVal.y = playerY * level.tileH * 2;
+    if(!OOB){
+        if( 
+            (
+                //check tile behind if between 2 tiles (facing right)
+                xPosInTile <= playerW && faceDir &&
+                data[playerY+2][playerX-1] > 7*4 &&
+                data[playerY+2][playerX-1] <= 7*8
+            )||(
+                //check tile behind if between 2 tiles (facing left)
+                level.tileW * 2 - xPosInTile <= playerW && !faceDir &&
+                data[playerY+2][playerX+1] > 7*4 &&
+                data[playerY+2][playerX+1] <= 7*8
+            )||(
+                //check tile beneath
+                data[playerY+2][playerX] > 7*4 &&
+                data[playerY+2][playerX] <= 7*8
+            )
+        ){
+            //console.log(data[playerY + 2][playerX]);
+            returnVal.y = playerY * level.tileH * 2;
+        }
     }
     if( //hitbox above:::
         (
@@ -313,7 +315,7 @@ const playerHitbox = () => {
         )||( //check head height
             data[playerY][playerX] >  7*4 && 
             data[playerY][playerX] <= 7*5
-        )||( //check under feet
+        )||( !OOB &&//check under feet
             data[playerY+2][playerX] >  7*4 && 
             data[playerY+2][playerX] <= 7*5
         )
@@ -792,7 +794,7 @@ class Player extends Entity{
 
         //| check yhitbox
         let playerReturn = playerHitbox();
-        if(playerReturn.OOB && this.y > 6 * 2 * level.tileH){
+        if(playerReturn.OOB){
             this.health = 0;
             console.log("U LOOSE! => Out Of Bounds!"); 
         }
@@ -1167,7 +1169,11 @@ const animate = () => {
     if(mainCharacter.health > 0){
         requestAnimationFrame(animate);
     }else{
-        showHUD("GAME OVER", `Health: ${mainCharacter.health}`);
+        showHUD(
+            "GAME OVER", 
+            `Health: ${mainCharacter.health}`, 
+            "F5 for restart :)", 
+            "Alt + F4 for a suprise :-)");
     }
 }
 
