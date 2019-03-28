@@ -89,6 +89,205 @@ const showHUD = (title, opt1, opt2, opt3, opt4, opt5, opt6) => {
     }
 }
 
+const parseURLParams = url => {
+    var queryStart = url.indexOf("?") + 1,
+        queryEnd   = url.indexOf("#") + 1 || url.length + 1,
+        query = url.slice(queryStart, queryEnd - 1),
+        pairs = query.replace(/\+/g, " ").split("&"),
+        parms = {}, i, n, v, nv;
+
+    if (query === url || query === "") return;
+
+    for (i = 0; i < pairs.length; i++) {
+        nv = pairs[i].split("=", 2);
+        n = decodeURIComponent(nv[0]);
+        v = decodeURIComponent(nv[1]);
+
+        if (!parms.hasOwnProperty(n)) parms[n] = [];
+        parms[n].push(nv.length === 2 ? v : null);
+    }
+    return parms;
+}
+
+const playerHitbox = () => {
+    let playerY = mainCharacter.y;
+    let playerX = mainCharacter.x;
+    if(mainCharacter.faceDirection){playerX += mainCharacter.w}
+    let playerH = mainCharacter.h;
+    let playerW = mainCharacter.w;
+    let faceDir = mainCharacter.faceDirection;
+    let data = level.screens[mainCharacter.screenID].data;
+    //let checkNums = [];
+    
+    playerX /= (level.tileW * 2);
+    playerX = Math.floor(playerX);
+    playerY /= (level.tileH * 2);
+    playerY = Math.floor(playerY);
+
+    if(playerX -1 <= 0){playerX = 0}
+    if(playerX +1 >= 25){playerX = 24}
+    if(playerY -1 <= 0){playerY = 0}
+    if(playerY +2 >= 14){playerY = 13}
+    
+    
+    //* Viser hvilke hitbokser vi skal sjekke
+    for (let i = -1; i <= 3-1; i++) { //5 tiles i høyden (3 + 1 + 1) (playerH + margene)
+        for (let j = -1; j <= 1; j++) { //3 tiles i bredden (1 + 1 + 1) (playerW + margene)
+
+            let pYinData = playerY + i;
+            let pXinData = playerX + j;
+            // if(playerY + i >= 14){playerY -= 1} //index [13] e siste ytre array, -1 for å unngå error
+            // if(playerY + i < 0){playerY = 0 -i}
+            // if(playerX + j >= 25){playerX -= 1}
+            // if(playerX + j < 0){playerX = 0 -j}
+
+            if(pYinData < 0){pYinData = 0}
+            if(pYinData > 14){pYinData = 14}
+            if(pXinData < 0){pXinData = 0}
+            if(pXinData > 25){pXinData = 25}
+
+            //console.log(playerY + i ,playerX + j);
+            let tileVal = data[pYinData][pXinData];
+            
+            //| Draw tiles to scan
+            ctx.fillStyle = "#f003";
+            ctx.fillRect(
+                (playerX + j) * (level.tileW * 2),
+                (playerY + i) * (level.tileH * 2),
+                level.tileW * 2,
+                level.tileH * 2
+            );
+            ctx.fillStyle = "#0f03";
+            ctx.fillRect(
+                (playerX) * (level.tileW * 2),
+                (playerY+2) * (level.tileH * 2),
+                level.tileW * 2,
+                level.tileH * 2
+            );
+            ctx.fillStyle = "#000";
+            ctx.font = "30px Georgia";
+            ctx.fillText(
+                tileVal,
+                (playerX + j) * (level.tileW * 2) + 16,
+                (playerY + i) * (level.tileH * 2) + 32
+            ); 
+
+        }
+    }
+    
+
+    //| Check for hitboxes
+    //if turn on spot w face out of platform fall down -- fiX!
+
+    //if face right ==> add playerW to mainchar
+    let xPosInTile = mainCharacter.x - (playerX * level.tileW * 2);
+    let yPosInTile = mainCharacter.y - (playerY * level.tileH * 2); //px to the current line over player
+    if(faceDir){xPosInTile += playerW;}
+    //console.log(playerY, yPosInTile);
+    let returnVal = {x: 0, y: 0, ladder: false}
+    
+    //*Y-dir
+    if( 
+        (
+            //check tile behind if between 2 tiles (facing right)
+            xPosInTile <= playerW && faceDir &&
+            data[playerY+2][playerX-1] > 7*4 &&
+            data[playerY+2][playerX-1] <= 7*8
+        )||(
+            //check tile behind if between 2 tiles (facing left)
+            level.tileW * 2 - xPosInTile <= playerW && !faceDir &&
+            data[playerY+2][playerX+1] > 7*4 &&
+            data[playerY+2][playerX+1] <= 7*8
+        )||(
+            //check tile beneath
+            data[playerY+2][playerX] > 7*4 &&
+            data[playerY+2][playerX] <= 7*8
+        )
+    ){
+        //console.log(data[playerY + 2][playerX]);
+        returnVal.y = playerY * level.tileH * 2;
+    }else if( //hitbox above:::
+        (
+            //check tile behind if between 2 tiles (facing right) && close to tile above
+            yPosInTile <= 2 &&
+            xPosInTile <= playerW && faceDir &&
+            data[playerY-1][playerX-1] > 7*5 &&
+            data[playerY-1][playerX-1] <= 7*8
+        )||(
+            //check tile behind if between 2 tiles (facing left) && close to tile above
+            yPosInTile <= 2 &&
+            level.tileW * 2 - xPosInTile <= playerW && !faceDir &&
+            data[playerY-1][playerX+1] > 7*5 &&
+            data[playerY-1][playerX+1] <= 7*8
+        )||(
+            //check if close to tile above
+            yPosInTile <= 2 &&
+            data[playerY-1][playerX] > 7*5 &&
+            data[playerY-1][playerX] <= 7*8
+        )
+    ){
+        //hit head
+        //console.log("hit ur head!");
+        console.log(playerY, yPosInTile);
+        returnVal.y = -1;
+    }
+
+    //*X-dir
+    if(
+        //if player more left than the tile to the left of player
+        ( //check legs height
+            xPosInTile <= 0+5 &&
+            data[playerY+1][playerX-1] > 7*5 && 
+            data[playerY+1][playerX-1] <= 7*8
+        )||( //check head height
+            xPosInTile <= 0+5 &&
+            data[playerY][playerX-1] > 7*5 && 
+            data[playerY][playerX-1] <= 7*8
+        )
+    ){
+        returnVal.x = -1;
+        // console.log("left");
+    }else if(
+        //if player more right than the tile to the right of player
+        ( //check legs height
+            xPosInTile >= 63-5 &&
+            data[playerY+1][playerX+1] > 7*5 && 
+            data[playerY+1][playerX+1] <= 7*8
+        )||( //check head height
+            xPosInTile >= 63-5 &&
+            data[playerY][playerX+1] > 7*5 && 
+            data[playerY][playerX+1] <= 7*8
+        )
+    ){
+        returnVal.x = +1;
+        // console.log("right");
+    }
+
+    //*ladder-val
+    if(
+        ( //check leg height
+            data[playerY+1][playerX] >  7*4 && 
+            data[playerY+1][playerX] <= 7*5
+        )||( //check head height
+            data[playerY][playerX] >  7*4 && 
+            data[playerY][playerX] <= 7*5
+        )||( //check under feet
+            data[playerY+2][playerX] >  7*4 && 
+            data[playerY+2][playerX] <= 7*5
+        )
+    ){
+        //console.log("LADDER!!!");
+        returnVal.ladder = true;
+    }
+    //console.log(returnVal);
+    return returnVal;
+
+
+    //console.log(playerX, playerY);
+    //console.log(levelX, levelY);
+}
+
+
 //! keyListener
 {
 let toggleIntervalR = false;
@@ -315,8 +514,8 @@ class Screen{
                 
                 ctx.drawImage(
                     imgSpriteSheet,
-                    this.tileW * ((this.data[i][j]-1) % 7), 
-                    this.tileH * Math.floor((this.data[i][j]-1) / 7),
+                    this.tileW * ((this.data[i][j]-1) % 7) -0, 
+                    this.tileH * Math.floor((this.data[i][j]-1) / 7) -0,
                     this.tileW,
                     this.tileH,
                     this.tileW * 2 * j,// + (marginW),
@@ -325,8 +524,11 @@ class Screen{
                     this.tileH * 2
                 );
 
+
+                //?legg bare te hvis type=air/move through (fra 7 => 7*3)
                 //Border på alle rutene
-                ctx.lineWidth = "0.3";
+                ctx.strokeStyle = "#000";// "#A0E0FC";//"#0005";
+                ctx.lineWidth = "0.2";
                 ctx.strokeRect(
                     this.tileW * 2 * j,// + (marginW),
                     this.tileH * 2 * i,// + (marginH),
@@ -434,6 +636,8 @@ class Player extends Entity{
         this.imgObj = imgObj;
         this.w *= playerScale;
         this.h *= playerScale;
+        this.w = Math.floor(this.w);// * 100 ) / 100;
+        this.h = Math.floor(this.h);// * 100 ) / 100;
 
         this.health = health;
         this.score = 0;
@@ -449,6 +653,7 @@ class Player extends Entity{
         this.reloadTime = 3; //1000 ==> every 1000th millisek
         this.reloadTimer = this.reloadTime;
         this.xHitBox = 0;
+        this.hitLadder = false;
     }
 
     shoot(){
@@ -473,7 +678,15 @@ class Player extends Entity{
     update(direction){ //moving player - direction from keylistner
         
         // if not pressing "down" while at bottom of screen &&and&& not pressing up while mid-air
-        if (
+        if(this.hitLadder){
+            if(direction[1] < 0){
+                console.log("up!");
+                this.y += -2;//this.speed / 2;
+            }else if(direction[1] > 0){
+                console.log("down!");
+                this.y += 2;//this.speed / 2;
+            }
+        }else if (
             !(-direction[1] < 0 && this.y + this.h >= canvH - border) && 
             !this.airBool &&  //-!(-direction[1] > 0 && this.velY < 0)
             direction[1] != 0
@@ -494,20 +707,32 @@ class Player extends Entity{
     }
 
     draw(){
-        super.draw(false); //false pga. ikke tegne (fillrect fra super) svart bakgrunn
+        //super.draw(false); //false pga. ikke tegne (fillrect fra super) svart bakgrunn
+        if(!this.hitLadder){
+            this.velY = Math.floor(this.velY * 100) / 100; 
+            this.velY += -gravity;
+            this.y += -this.velY;;
+        }else{
+            this.airBool = false;
+        }
+        this.x += this.velX;
+        this.velX = 0;
 
-        //| check hitbox
+        //| check yhitbox
         let playerReturn = playerHitbox();
         this.xHitBox = playerReturn.x;
-        if(playerReturn.y > 0){ 
+        this.hitLadder = playerReturn.ladder;
+        if(playerReturn.y > 0 && !this.hitLadder){ 
             this.velY = 0, this.airBool = false;
             this.y = 
-            playerReturn.y + (2 * 2 * 32) //2 + 2*tileH
-            - (Object.values(spriteInfo)[0][3] * playerScale)
-            - border;
+            playerReturn.y + (2 * 2 * 32) //2 + 2*tileH aka: 128
+            - this.h//(Object.values(spriteInfo)[0][3] * playerScale) // - playerH
+            - 6//border; //does a bug where u cant jump if not moved up 6pixls
+        }else if(playerReturn.y == -1 && !this.hitLadder){
+            this.velY = 0, this.airBool = true;
         }
-        if(playerReturn.x < 0){}
-
+        
+        
         //| Animations
         if(this.health == 0) {
             ctx.fillText("GAME OVER",canvW/2,canvH/2);
@@ -544,6 +769,7 @@ class Player extends Entity{
                     Object.values(spriteInfo)[i][3] * playerScale
                 );
                 this.h = Object.values(spriteInfo)[i][3] * playerScale;
+                this.h = Math.floor(this.h) // * 100 ) / 100;
 
                 ctx.strokeStyle = "#000";
                 ctx.lineWidth = "3";
@@ -723,107 +949,6 @@ class Boss extends Enemy {
 }
 
 
-const parseURLParams = url => {
-    var queryStart = url.indexOf("?") + 1,
-        queryEnd   = url.indexOf("#") + 1 || url.length + 1,
-        query = url.slice(queryStart, queryEnd - 1),
-        pairs = query.replace(/\+/g, " ").split("&"),
-        parms = {}, i, n, v, nv;
-
-    if (query === url || query === "") return;
-
-    for (i = 0; i < pairs.length; i++) {
-        nv = pairs[i].split("=", 2);
-        n = decodeURIComponent(nv[0]);
-        v = decodeURIComponent(nv[1]);
-
-        if (!parms.hasOwnProperty(n)) parms[n] = [];
-        parms[n].push(nv.length === 2 ? v : null);
-    }
-    return parms;
-}
-
-const playerHitbox = () => {
-    let playerX = mainCharacter.x;
-    if(mainCharacter.faceDirection){playerX += mainCharacter.w}
-    let playerY = mainCharacter.y;
-    let playerH = mainCharacter.h;
-    let playerW = mainCharacter.w;
-    let data = level.screens[mainCharacter.screenID].data;
-    //let checkNums = [];
-
-    if(playerX < 0){playerX = 0}
-    if(playerY < 0){playerY = 0}
-
-    playerX /= (level.tileW * 2);
-    playerX = Math.floor(playerX);
-    playerY /= (level.tileH * 2);
-    playerY = Math.floor(playerY);
-    
-    //* Viser hvilke hitbokser vi skal sjekke
-    for (let i = -1; i <= 3-1; i++) { //5 tiles i høyden (3 + 1 + 1) (playerH + margene)
-        for (let j = -1; j <= 1; j++) { //3 tiles i bredden (1 + 1 + 1) (playerW + margene)
-            
-            if(playerY + i >= 14){playerY -= 1} //index [13] e siste ytre array, -1 for å unngå error
-            if(playerX + j >= 25){playerX -= 1}
-            let tileVal = data[playerY + i][playerX + j];
-            
-            //| Draw tiles to scan
-            ctx.fillStyle = "#f003";
-            ctx.fillRect(
-                (playerX + j) * (level.tileW * 2),
-                (playerY + i) * (level.tileH * 2),
-                level.tileW * 2,
-                level.tileH * 2
-            );
-            ctx.fillStyle = "#000";
-            ctx.font = "30px Georgia";
-            ctx.fillText(
-                tileVal,
-                (playerX + j) * (level.tileW * 2) + 16,
-                (playerY + i) * (level.tileH * 2) + 32
-            ); 
-
-        }
-    }
-    
-    //| Check for hitboxes
-    let returnVal = {x: 0, y: 0}
-    if( 
-        data[playerY + 2][playerX + 0] > 7*5 &&
-        data[playerY + 2][playerX + 0] <= 7*8
-    ){
-        console.log(data[playerY + 2][playerX]);
-        returnVal.y = playerY * level.tileH * 2;
-    }
-    if(
-        // data[playerY + 2][playerX-1] > 7*5 &&
-        // data[playerY + 2][playerX-1] <= 7*8 &&
-
-        data[playerY][playerX-1] > 7*5 &&
-        data[playerY][playerX-1] <= 7*8
-    ){
-        returnVal.x = -1;
-        // console.log("left");
-    }else if(
-        // data[playerY + 2][playerX+1] > 7*5 &&
-        // data[playerY + 2][playerX+1] <= 7*8 &&
-
-        data[playerY][playerX+1] > 7*5 &&
-        data[playerY][playerX+1] <= 7*8
-    ){
-        returnVal.x = +1;
-        // console.log("right");
-    }
-    return returnVal;
-
-
-    //console.log(playerX, playerY);
-    //console.log(levelX, levelY);
-}
-
-
-
 const init = () => {
     window.reloading = setInterval(reloadInterval,100);
     
@@ -854,8 +979,8 @@ const init = () => {
     imgMainChar.src = "./media/main_character/spritesheet.png";
     window.imgMainCharObj = {positons: [/*positions in spritesheet, can be obj*/], img: imgMainChar};
     window.mainCharacter = new Player(
-        canvW-50, 
-        900-275, 
+        900,//canvW-50, 
+        60,//900-275, 
         35, 
         170 /*35*entityScale, 170*entityScale*/, 
         true, 
