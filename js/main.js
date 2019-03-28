@@ -512,17 +512,18 @@ class Screen{
                 //console.log(this.data[i][j], this.data[i][0]);
                 //console.log(i, j);
                 
-                ctx.drawImage(
-                    imgSpriteSheet,
-                    this.tileW * ((this.data[i][j]-1) % 7) -0, 
-                    this.tileH * Math.floor((this.data[i][j]-1) / 7) -0,
-                    this.tileW,
-                    this.tileH,
-                    this.tileW * 2 * j,// + (marginW),
-                    this.tileH * 2 * i,// + (marginH),
-                    this.tileW * 2,
-                    this.tileH * 2
-                );
+                //| draw screen every frame
+                // ctx.drawImage(
+                //     imgSpriteSheet,
+                //     this.tileW * ((this.data[i][j]-1) % 7) -0, 
+                //     this.tileH * Math.floor((this.data[i][j]-1) / 7) -0,
+                //     this.tileW,
+                //     this.tileH,
+                //     this.tileW * 2 * j,// + (marginW),
+                //     this.tileH * 2 * i,// + (marginH),
+                //     this.tileW * 2,
+                //     this.tileH * 2
+                // );
 
 
                 //?legg bare te hvis type=air/move through (fra 7 => 7*3)
@@ -1003,12 +1004,23 @@ const init = () => {
     imgMarkusR.src = "./media/markus_right.png";
 
     //* Batenemy example
+    let enemyPosArr = toObjURL.enemyPosArr;
     window.imgBat = new Image();
     imgBat.src = "./media/bat.PNG";
-    entities.push(new batEnemy(275,300,30,17,200,625,imgBat));
-    entities.push(new markusEnemy(1200, 230, 87, 90, 975, 1475, imgMarkusR));
-    entities.push(new markusEnemy(100, 745, 87, 90, 0, 600, imgMarkusR));
-    entities.push(new markusEnemy(300, 360, 87, 90, 300, 700, imgMarkusR));
+    console.log(enemyPosArr[mainCharacter.screenID]);
+    for(let enemy in enemyPosArr[mainCharacter.screenID]){
+        console.log(enemy.bat);
+        entities.push(new batEnemy(enemy[0], enemy[1], enemy[2], enemy[3], enemy[4], enemy[5], imgBat));
+    }
+    for(let enemy in enemyPosArr[mainCharacter.screenID]){
+        console.log(enemy.mark);
+        entities.push(new markusEnemy(enemy[0], enemy[1], enemy[2], enemy[3], enemy[4], enemy[5], imgMarkusR));
+    }
+    
+    // entities.push(new batEnemy(275,300,30,17,200,625,imgBat));
+    // entities.push(new markusEnemy(1200, 230, 87, 90, 975, 1475, imgMarkusR));
+    // entities.push(new markusEnemy(100, 745, 87, 90, 0, 600, imgMarkusR));
+    // entities.push(new markusEnemy(300, 360, 87, 90, 300, 700, imgMarkusR));
 
     //entities.push(new Enemy(1300, 100, 100, 100, true));
     //console.log(entities);
