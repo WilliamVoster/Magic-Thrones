@@ -979,8 +979,8 @@ const init = () => {
     imgMainChar.src = "./media/main_character/spritesheet.png";
     window.imgMainCharObj = {positons: [/*positions in spritesheet, can be obj*/], img: imgMainChar};
     window.mainCharacter = new Player(
-        900,//canvW-50, 
-        60,//900-275, 
+        canvW-50, 
+        900-275, 
         35, 
         170 /*35*entityScale, 170*entityScale*/, 
         true, 
