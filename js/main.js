@@ -133,49 +133,49 @@ const playerHitbox = () => {
     if(playerY + 2 > 13 || playerY -1 < 0 ){OOB = true}
     
     //* Viser hvilke hitbokser vi skal sjekke
-    for (let i = -1; i <= 3-1; i++) { //5 tiles i høyden (3 + 1 + 1) (playerH + margene)
-        for (let j = -1; j <= 1; j++) { //3 tiles i bredden (1 + 1 + 1) (playerW + margene)
+    // for (let i = -1; i <= 3-1; i++) { //5 tiles i høyden (3 + 1 + 1) (playerH + margene)
+    //     for (let j = -1; j <= 1; j++) { //3 tiles i bredden (1 + 1 + 1) (playerW + margene)
 
-            let pYinData = playerY + i;
-            let pXinData = playerX + j;
-            // if(playerY + i >= 14){playerY -= 1} //index [13] e siste ytre array, -1 for å unngå error
-            // if(playerY + i < 0){playerY = 0 -i}
-            // if(playerX + j >= 25){playerX -= 1}
-            // if(playerX + j < 0){playerX = 0 -j}
+    //         let pYinData = playerY + i;
+    //         let pXinData = playerX + j;
+    //         // if(playerY + i >= 14){playerY -= 1} //index [13] e siste ytre array, -1 for å unngå error
+    //         // if(playerY + i < 0){playerY = 0 -i}
+    //         // if(playerX + j >= 25){playerX -= 1}
+    //         // if(playerX + j < 0){playerX = 0 -j}
 
-            if(pYinData < 0){pYinData = 0}
-            if(pYinData > 13){pYinData = 13}
-            if(pXinData < 0){pXinData = 0}
-            if(pXinData > 24){pXinData = 24}
+    //         if(pYinData < 0){pYinData = 0}
+    //         if(pYinData > 13){pYinData = 13}
+    //         if(pXinData < 0){pXinData = 0}
+    //         if(pXinData > 24){pXinData = 24}
 
-            //console.log(playerY + i ,playerX + j);
-            let tileVal = data[pYinData][pXinData];
+    //         //console.log(playerY + i ,playerX + j);
+    //         let tileVal = data[pYinData][pXinData];
             
-            //| Draw tiles to scan
-            ctx.fillStyle = "#f003";
-            ctx.fillRect(
-                (playerX + j) * (level.tileW * 2),
-                (playerY + i) * (level.tileH * 2),
-                level.tileW * 2,
-                level.tileH * 2
-            );
-            ctx.fillStyle = "#0f03";
-            ctx.fillRect(
-                (playerX) * (level.tileW * 2),
-                (playerY+2) * (level.tileH * 2),
-                level.tileW * 2,
-                level.tileH * 2
-            );
-            ctx.fillStyle = "#000";
-            ctx.font = "30px Georgia";
-            ctx.fillText(
-                tileVal,
-                (playerX + j) * (level.tileW * 2) + 16,
-                (playerY + i) * (level.tileH * 2) + 32
-            ); 
+    //         //| Draw tiles to scan
+    //         ctx.fillStyle = "#f003";
+    //         ctx.fillRect(
+    //             (playerX + j) * (level.tileW * 2),
+    //             (playerY + i) * (level.tileH * 2),
+    //             level.tileW * 2,
+    //             level.tileH * 2
+    //         );
+    //         ctx.fillStyle = "#0f03";
+    //         ctx.fillRect(
+    //             (playerX) * (level.tileW * 2),
+    //             (playerY+2) * (level.tileH * 2),
+    //             level.tileW * 2,
+    //             level.tileH * 2
+    //         );
+    //         ctx.fillStyle = "#000";
+    //         ctx.font = "30px Georgia";
+    //         ctx.fillText(
+    //             tileVal,
+    //             (playerX + j) * (level.tileW * 2) + 16,
+    //             (playerY + i) * (level.tileH * 2) + 32
+    //         ); 
 
-        }
-    }
+    //     }
+    // }
 
     //| Check for hitboxes
     //if turn on spot w face out of platform fall down -- fiX!
@@ -792,7 +792,7 @@ class Player extends Entity{
 
         //| check yhitbox
         let playerReturn = playerHitbox();
-        if(playerReturn.OOB){
+        if(playerReturn.OOB && this.y > 6 * 2 * level.tileH){
             this.health = 0;
             console.log("U LOOSE! => Out Of Bounds!"); 
         }
