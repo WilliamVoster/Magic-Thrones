@@ -1,9 +1,13 @@
 # Magic-Thrones
 Group project made with HTML5 Canvas
 
-**mapRendering
+**playerHUD and GameOver-screen
 ![](./previews/preview16.PNG)
+
+**enemies
 ![](./previews/preview15.PNG)
+
+**mapRendering
 ![](./previews/preview14.PNG)
 ![](./previews/preview10.PNG)
 ![](./previews/preview11.PNG)
