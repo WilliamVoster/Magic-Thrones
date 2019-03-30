@@ -1,22 +1,28 @@
 # Magic-Thrones
 Group project made with HTML5 Canvas
 
-**playerHUD and GameOver-screen
+### Controls
+```
+W, S, A, D or ArrowKeys to move
+[Spacebar]              to Jump
+[Shift]                 to shoot
+
+```
+### Latest Preview
 ![](./previews/preview16.PNG)
 
-**enemies
+### Stages of Development
+>playerHUD and GameOver-screen
+![](./previews/preview16.PNG)
+>enemies
 ![](./previews/preview15.PNG)
-
-**mapRendering
+>mapRendering
 ![](./previews/preview14.PNG)
 ![](./previews/preview10.PNG)
 ![](./previews/preview11.PNG)
-
-**bosslevel
+>bosslevel
 ![](./previews/preview4.PNG)
-
-**player-shooting
+>player-shooting
 ![](./previews/preview3.PNG)
-
-**character-drawing
+>character-drawing
 ![](./previews/preview2.PNG)
