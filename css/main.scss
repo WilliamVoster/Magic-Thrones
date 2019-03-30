@@ -1,5 +1,5 @@
 $BG1: #CFC9CF;
-$BG2: #2344;
+$BG2: #2348;
 $Col1: #3f473f;
 $Col2: #fdd;
 
@@ -20,44 +20,90 @@ body{
     overflow-y: hidden;
     overflow-x: hidden;
 
+    #canvasGfxBackground{
+        z-index: 1; //bak zindex 2
+
+        //visibility: hidden;
+        
+        background: url(../media/background_sunny.jpg) ;// red;
+    }
     #canvasGfx{
+        z-index: 2;
+
+        //visibility: hidden;
+        
+        //background: blue; //foran zindex 1
+    }
+
+    #canvasGfx, #canvasGfxBackground{
         position: absolute;
 
         border: 2px solid black;
         border-radius: 10px;
-
-        background: url(../media/background_sunny.jpg) ;// red;
-
-        //position: relative;
            
     }
 
-    #HUD{
+    #HUD{ //div - element
         //visibility: hidden; skjer i JS ( i Canvas setup )
+        z-index: 3;
 
-        position: absolute;
-        background: $BG2;
-        color: $Col2;
         border-radius: 10px;
 
+        position: absolute;
+        color: $Col2;
+        #menu{
+            list-style-type: none;
+        }
+    }
+
+    #HUD.playerData{
+        //display: flex;
+
+        #menuTitle{
+            //visibility: hidden;
+        }
+        #menu{
+            background: #B03D32;
+            margin-top: -20px;
+            // border-radius: 10px;
+            border-top-left-radius:  8px;
+            border-top-right-radius: 8px;
+
+            display: flex;
+            li{
+                padding: 0 1em;
+            }
+        }
+    }
+
+    #HUD.gameOver{
         display: flex;
         flex-direction: column;
         align-items: center;
-
-        #menuTitle{
-            padding: 1em;
+        color: #B03D32;
+        background: $BG2;
+            
+        #menuTitle{ //p - element
+            padding: .5em;
+            font-size: 5em;
+            background: #E6E1E8;
+            
         }
 
-        #menu{
+        #menu{ //ul - element
             display: flex;
             flex-direction: column;
             list-style-type: none;
 
             padding: 1em;
             margin: 0;
-            
+
+            background: #E6E1E8;
         }
     }
+
+    
+
 
     p#countFrames{
         visibility: hidden;
