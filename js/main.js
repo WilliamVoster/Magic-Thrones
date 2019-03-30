@@ -338,6 +338,7 @@ const playerHitbox = () => {
         // console.log(currFinishPos, playerX, playerY);
         if(playerX >= currFinishPos[0] && playerY <= currFinishPos[1]){
             console.log("Winner!");
+            mainCharacter.score += 1000;
             newScreen(mainCharacter.screenID +1);
         }
     }
@@ -974,7 +975,7 @@ class Boss extends Enemy {
     constructor(x, y, w, h, imgObj){
         super(x, y, w, h, false);
         this.imgObj = imgObj;
-        this.lives = 5;
+        this.lives = 6;
         this.mad = false;
         this.dx = 3;
         this.dy = 3;
@@ -1012,16 +1013,18 @@ class Boss extends Enemy {
             this.shoot();
             this.reload = this.reloadtime;
         }
-        if (this.lives<3){
+        if (this.lives <= 3 && this.lives > 0 && !this.mad){
             //Angry boss state (harder)
             this.imgObj = imgMadBoss;
+            this.mad = true;
             // this.dx *= 2;
             // this.dy *= 2;
             this.reloadtime *= 1/2;
             this.shotSpeed = 2;
             this.shotColour = "#a0a";
-            this.lives = 5;
+            //this.lives = 5;
         }
+        console.log(this.mad, this.lives)
         if ((this.x+this.dx+this.w) >= canvW - border || (this.x+this.dx) <= border) {
             this.dx = (-1) * this.dx;
         }
@@ -1126,10 +1129,10 @@ const animate = () => {
     //level.screens[mainCharacter.screenID].draw(); //midlertidig
 
     //| draw skudd & check for hits
-    console.log();
+    //console.log();
     shothitbox: for (let i = 0; i < window.shots.length; i++) {
         //window.shots[i].draw();console.log(entities);
-        if (doesIntersect(Kristian,window.shots[i]) && !window.shots[i].enemy) {
+        if (doesIntersect(Kristian,window.shots[i]) && !window.shots[i].enemy && mainCharacter.screenID == 3) {
             mainCharacter.score += 100;
             Kristian.lives--;
             window.shots.splice(i, 1);
@@ -1184,12 +1187,12 @@ const animate = () => {
     //| draw all (other) entities
     entities.forEach(entity => entity.draw()); //mugligens flytte mainchar/player til dette array-et
 
-    if(mainCharacter.screenID == 3 && Kristian.lives != 0) {Kristian.draw()}
+    if(mainCharacter.screenID == 3) {Kristian.draw()} // && Kristian.lives != 0
 
 
-    if(mainCharacter.health > 0){
+    if(mainCharacter.health > 0 && Kristian.lives > 0){
         requestAnimationFrame(animate);
-    }else{
+    }else if(mainCharacter.health <= 0){
         showHUD(
             "GAME OVER", 
             0, 
@@ -1197,7 +1200,17 @@ const animate = () => {
                 `Score: ${mainCharacter.score}`, 
                 "F5 for restart :)", 
                 "Alt + F4 for a suprise :-)"
-            ]);
+            ]
+        );
+    }else if(Kristian.lives <= 0){
+        showHUD(
+            "YOU WIN", 
+            0, 
+            [
+                `Score: ${mainCharacter.score}`, 
+                "F5 to play again :)"
+            ]
+        );
     }
 }
 
