@@ -1,6 +1,8 @@
 //* Connect UI
 const canvasGfx = document.getElementById("canvasGfx");
+const canvasGfxBackground = document.getElementById("canvasGfxBackground");
 const ctx = canvasGfx.getContext("2d");
+const ctxBG = canvasGfxBackground.getContext("2d");
 const HUD = document.getElementById("HUD");
 const pCountFrames = document.getElementById("countFrames");
 
@@ -15,6 +17,8 @@ const marginH = 8;
 const border = 10; //in pixels
 const gravity = 0.5;//0.25;
 const playerScale = 2/3;
+let shopMenu = false;
+let numHearts;
 let countFrames = 0;
 let entities = [];
 window.shots = []; 
@@ -37,10 +41,13 @@ const spriteInfo = { //sx, sy, swidth, sheight
     // let canvW = 1600;//canvH * (16/9);//windowW;   //| width = 16/9 of height
     // let canvH = 900;//windowH;
     
-    ctx.font = "100px Helvetica";
+    ctx.font = "150px Helvetica";
     
     canvasGfx.width  = canvW;
     canvasGfx.height = canvH;
+
+    canvasGfxBackground.width = canvW ;
+    canvasGfxBackground.height = canvH;
 
     HUD.style.width = canvW + "px";
     HUD.style.height = canvH + "px";
@@ -59,7 +66,7 @@ const doesIntersect = (a,b) => {
 
 const randIntMinMax = (min, max) => Math.floor(Math.random() * (max - min) + min);
 
-const showHUD = (title, opt1, opt2, opt3, opt4, opt5, opt6) => {
+const showHUD = (title, type, [opt1, opt2, opt3, opt4, opt5, opt6]) => {
     //Eks: showHUD("testss", "Start game", "Tutorial & Controlls", "Exit");
     //^^if empty, aka: showHUD(); ==> visibility hidden && reset hud
 
@@ -70,6 +77,9 @@ const showHUD = (title, opt1, opt2, opt3, opt4, opt5, opt6) => {
         const menuTitle = document.getElementById("menuTitle");
         const menu = document.getElementById("menu");
         menu.innerHTML = ""; //clear list b4 filling
+        HUD.classList = ""; //clear classlist
+        if(type == 0){HUD.classList.add("gameOver")}
+        if(type == 1){HUD.classList.add("playerData"), title = ""}
     
         let list = [];
         let options = [opt1, opt2, opt3, opt4, opt5, opt6];
@@ -88,6 +98,7 @@ const showHUD = (title, opt1, opt2, opt3, opt4, opt5, opt6) => {
         HUD.style.visibility = "visible";
     }
 }
+
 
 const parseURLParams = url => {
     var queryStart = url.indexOf("?") + 1,
@@ -358,6 +369,9 @@ const newScreen = currId => {
     mainCharacter.x = screenSpawnPos[0] * level.tileW * 2;
     mainCharacter.y = screenSpawnPos[1] * level.tileH * 2;
 
+    ctxBG.clearRect(0, 0, canvW, canvH);
+    //level.draw(currId);
+    level.screens[currId].draw()
     createEnemies();
 }
 
@@ -367,7 +381,6 @@ let toggleIntervalR = false;
 let toggleIntervalL = false;
 let toggleIntervalU = false;
 let toggleIntervalD = false;
-let toggleHUDOverlay = false;
 let toggleIntervalSpace = false; //aka is there an interval?
 //window.intervalShootHasRun = false;
 
@@ -447,11 +460,10 @@ const keyEventDownHandler = e => {
 
     if(e.keyCode == 13){ //enter
 
+        shopMenu = !shopMenu;
         //if already HUD ==> hide else draw dummy-HUD
-        toggleHUDOverlay ? showHUD() : showHUD("testss", "Start game", "Tutorial & Controlls", "Exit");
+        if(shopMenu){showHUD("Shop", 0, ["Coming soon...?", "Refill hearts", "Exit"])};
 
-        //switch boolean
-        toggleHUDOverlay = !toggleHUDOverlay;
     }
 
     if(e.keyCode == 16 && !toggleIntervalSpace){ //space
@@ -583,10 +595,10 @@ class Screen{
                 // );
 
                 //console.log(this.data[i][j], this.data[i][0]);
-                //console.log(i, j);
-                
+                //console.log(i, j, this.tileW, this.tileH);
+                //console.log(imgSpriteSheet);
                 //| draw screen every frame
-                ctx.drawImage(
+                ctxBG.drawImage(
                     imgSpriteSheet,
                     this.tileW * ((this.data[i][j]-1) % 7) -0, 
                     this.tileH * Math.floor((this.data[i][j]-1) / 7) -0,
@@ -598,12 +610,13 @@ class Screen{
                     this.tileH * 2
                 );
 
+                //ctxBG.fillRect(10, 10, 1000, 1000);
 
                 //?legg bare te hvis type=air/move through (fra 7 => 7*3)
                 //Border på alle rutene
-                ctx.strokeStyle = "#000";// "#A0E0FC";//"#0005";
-                ctx.lineWidth = "0.2";
-                ctx.strokeRect(
+                ctxBG.strokeStyle = "#000";// "#A0E0FC";//"#0005";
+                ctxBG.lineWidth = "0.2";
+                ctxBG.strokeRect(
                     this.tileW * 2 * j,// + (marginW),
                     this.tileH * 2 * i,// + (marginH),
                     this.tileW * 2,
@@ -1088,7 +1101,10 @@ const init = () => {
     window.imgBat = new Image();
     imgBat.src = "./media/bat.PNG";
     //console.log(enemyPosArr[mainCharacter.screenID]);
-    createEnemies();
+    //createEnemies();
+    setTimeout(() => {newScreen(mainCharacter.screenID)}, 10);
+    //level.screens[mainCharacter.screenID].draw()
+    
 
 }
 
@@ -1105,13 +1121,14 @@ const animate = () => {
 
     //| levelDraw
     //level.draw(mainCharacter.screenID);
-    level.screens[mainCharacter.screenID].draw(); //midlertidig
+    //level.screens[mainCharacter.screenID].draw(); //midlertidig
 
-    // draw skudd & check for hits
+    //| draw skudd & check for hits
     console.log();
     shothitbox: for (let i = 0; i < window.shots.length; i++) {
         //window.shots[i].draw();console.log(entities);
         if (doesIntersect(Kristian,window.shots[i]) && !window.shots[i].enemy) {
+            mainCharacter.score += 100;
             Kristian.lives--;
             window.shots.splice(i, 1);
             continue shothitbox;
@@ -1119,6 +1136,7 @@ const animate = () => {
 
         for (let j = 0; j<entities.length; j++) {
             if (doesIntersect(window.shots[i],entities[j]) && !window.shots[i].enemy) {
+                mainCharacter.score += 25;
                 window.shots.splice(i, 1);
                 entities.splice(j, 1);
                 continue shothitbox;
@@ -1153,17 +1171,17 @@ const animate = () => {
     //| draw mainChar
     mainCharacter.draw();
 
+    //| update hud
+    if(!shopMenu){
+        numHearts = "";
+        for (let i = 0; i < mainCharacter.health; i++) {numHearts += "❤"}
+        showHUD("playerData", 1, [`Score: ${mainCharacter.score}`, `Health: ${numHearts}`]);
+    }
+
     //| draw all (other) entities
     entities.forEach(entity => entity.draw()); //mugligens flytte mainchar/player til dette array-et
 
-    //midlertidig testing av 
-    //playerHitbox();
-
-    //draw gameGUI
-    
-    
     if(mainCharacter.screenID == 3 && Kristian.lives != 0) {Kristian.draw()}
-
 
 
     if(mainCharacter.health > 0){
@@ -1171,9 +1189,12 @@ const animate = () => {
     }else{
         showHUD(
             "GAME OVER", 
-            `Health: ${mainCharacter.health}`, 
-            "F5 for restart :)", 
-            "Alt + F4 for a suprise :-)");
+            0, 
+            [
+                `Score: ${mainCharacter.score}`, 
+                "F5 for restart :)", 
+                "Alt + F4 for a suprise :-)"
+            ]);
     }
 }
 
