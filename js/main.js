@@ -1101,7 +1101,9 @@ const init = () => {
     window.imgBat = new Image();
     imgBat.src = "./media/bat.PNG";
     //console.log(enemyPosArr[mainCharacter.screenID]);
-    //createEnemies();
+
+    //createEnemies(); //| creating enemies moved to newScreen function
+
     setTimeout(() => {newScreen(mainCharacter.screenID)}, 100);
     //level.screens[mainCharacter.screenID].draw()
     
