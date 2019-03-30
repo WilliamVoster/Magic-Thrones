@@ -8,6 +8,13 @@ W, S, A, D or ArrowKeys to move
 [Shift]                 to shoot
 
 ```
+
+Try [Magic Thrones](https://shoppinglist-voster.herokuapp.com/MagicThrones/ "A HTML5 canvas & JS game")!
+
+```
+URL: https://shoppinglist-voster.herokuapp.com/MagicThrones/
+```
+
 ### Latest Preview
 ![](./previews/preview16.PNG)
 
