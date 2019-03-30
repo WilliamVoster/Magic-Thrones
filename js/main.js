@@ -718,7 +718,7 @@ class Enemy extends Entity{
 }
 
 class Player extends Entity{
-    constructor(x, y, w, h, gravityBoolean, imgObj, health){
+    constructor(x, y, w, h, gravityBoolean, imgObj, health, score){
         super(x, y, w, h, gravityBoolean);
         this.imgObj = imgObj;
         this.w *= playerScale;
@@ -726,8 +726,8 @@ class Player extends Entity{
         this.w = Math.floor(this.w);// * 100 ) / 100;
         this.h = Math.floor(this.h);// * 100 ) / 100;
 
-        this.health = health;
-        this.score = 0;
+        this.health = health || 3;
+        this.score = score || 0;
         this.level = 0;
         this.screenID = 0
         this.updateSpeed = 2; //interval - hvert 2-ende millisek
@@ -1154,7 +1154,7 @@ const animate = () => {
 
     for (let i = 0; i < entities.length; i++) {
         if (doesIntersect(mainCharacter,entities[i])) {
-            let stats = [mainCharacter.health - 1];
+            let stats = [mainCharacter.health - 1, mainCharacter.score];
             window.mainCharacter = new Player(
                 canvW-50, 
                 900-275, 
@@ -1162,7 +1162,8 @@ const animate = () => {
                 170 /*35*entityScale, 170*entityScale*/, 
                 true, 
                 imgMainCharObj,
-                stats[0]
+                stats[0],
+                stats[1]
             );
         }
     }
